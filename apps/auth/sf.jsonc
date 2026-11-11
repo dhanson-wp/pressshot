@@ -1,0 +1,5 @@
+{
+  "$schema": "https://spacefast.com/schemas/sf.json",
+  "name": "PressShot sign-in",
+  "runtime": { "kind": "functions", "entry": "handler.mjs", "compatibilityDate": "2026-07-01" }
+}

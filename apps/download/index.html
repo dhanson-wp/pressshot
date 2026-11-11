@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Install PressShot: screenshots and recordings on your own WordPress site</title>
+<meta name="description" content="PressShot is a free, open-source macOS menu bar app. Capture or record, and the file uploads to your WordPress media library with a link on your clipboard.">
+<link rel="canonical" href="https://get-pressshot.space.fast/">
+<link rel="icon" href="/brand/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="/brand/favicon-32.png">
+<link rel="apple-touch-icon" href="/brand/apple-touch-icon.png">
+<meta property="og:title" content="Install PressShot">
+<meta property="og:description" content="Screenshots and screen recordings that live on your own WordPress site.">
+<meta property="og:url" content="https://get-pressshot.space.fast/">
+<meta property="og:image" content="https://get-pressshot.space.fast/brand/icon-512.png">
+<style>
+:root {
+  color-scheme: light dark;
+  --paper: #FAF8F2; --ink: #222B3A; --cobalt: #3159D8; --butter: #F4E9BB;
+  --muted: #566076; --rule: #E2DDCF; --code-bg: #222B3A; --code-ink: #FAF8F2;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --paper: #161C27; --ink: #F1EEE4; --cobalt: #8FA8F5; --butter: #3A3521; --muted: #A9B1C2; --rule: #2C3545; --code-bg: #0E131B; --code-ink: #F1EEE4; }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--paper); color: var(--ink); font: 1.0625rem/1.55 ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; }
+a { color: var(--cobalt); text-underline-offset: 0.15em; }
+:focus-visible { outline: 3px solid var(--cobalt); outline-offset: 3px; border-radius: 4px; }
+.skip { position: absolute; left: -999px; }
+.skip:focus { left: 1rem; top: 1rem; background: var(--paper); padding: 0.5rem 0.75rem; }
+header, main, footer { max-width: 44rem; margin: 0 auto; padding: 0 1.25rem; }
+header { padding-top: clamp(1.5rem, 5vw, 3rem); }
+header img { display: block; height: 2rem; width: auto; }
+h1 { font: 700 clamp(2rem, 6vw, 3.1rem)/1.1 Georgia, "Iowan Old Style", "Times New Roman", serif; letter-spacing: -0.02em; margin: clamp(2rem, 7vw, 4rem) 0 1rem; max-width: 18ch; }
+h2 { font: 700 1.35rem/1.2 Georgia, "Iowan Old Style", "Times New Roman", serif; margin: 3rem 0 0.75rem; }
+p, li { max-width: 62ch; }
+.lede { font-size: 1.2rem; color: var(--muted); }
+.cmd { display: flex; gap: 0.5rem; align-items: stretch; margin: 1.5rem 0 0.5rem; }
+pre { margin: 0; flex: 1; min-width: 0; overflow-x: auto; background: var(--code-bg); color: var(--code-ink); padding: 0.95rem 1rem; border-radius: 8px; font: 0.95rem/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; }
+button { font: inherit; font-weight: 600; cursor: pointer; border: 0; border-radius: 8px; padding: 0 1.1rem; background: var(--cobalt); color: var(--paper); min-height: 2.75rem; }
+.note { color: var(--muted); font-size: 0.95rem; }
+ol { padding-left: 1.25rem; }
+li { margin: 0.5rem 0; }
+code { font: 0.92em ui-monospace, SFMono-Regular, Menlo, monospace; background: var(--butter); padding: 0.1em 0.3em; border-radius: 4px; }
+pre code { background: none; padding: 0; font-size: 1em; }
+footer { border-top: 1px solid var(--rule); margin-top: 4rem; padding-top: 1.25rem; padding-bottom: 3rem; color: var(--muted); font-size: 0.95rem; }
+@media (max-width: 30rem) { .cmd { flex-direction: column; } }
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header>
+  <picture>
+    <source srcset="/brand/lockup-white.svg" media="(prefers-color-scheme: dark)">
+    <img src="/brand/lockup-ink.svg" width="358" height="53" alt="PressShot">
+  </picture>
+</header>
+<main id="main">
+  <h1>Your screenshots, on your own WordPress site.</h1>
+  <p class="lede">PressShot is a free Mac menu bar app. Take a screenshot or record your screen, and it uploads to your WordPress media library and puts the link on your clipboard.</p>
+
+  <h2>Install</h2>
+  <p>Paste this into Terminal and press Return:</p>
+  <div class="cmd">
+    <pre><code id="cmd">curl -fsSL https://get-pressshot.space.fast/install.sh | sh</code></pre>
+    <button type="button" id="copy" aria-live="polite">Copy</button>
+  </div>
+  <p class="note">It downloads the latest build, checks it, puts PressShot in your Applications folder, and opens it. Run it again to upgrade. Needs macOS 12.3 or newer.</p>
+  <p class="note">PressShot isn't notarized by Apple yet, so the Terminal install is the smooth path; a browser download would be blocked by macOS.</p>
+
+  <h2>Then three things only you can do</h2>
+  <ol>
+    <li><strong>Allow Screen Recording</strong> when macOS asks, then quit and reopen PressShot.</li>
+    <li><strong>Connect your site.</strong> In PressShot Settings, open Upload destinations, add WordPress.com, approve in your browser, pick a site, and save.</li>
+    <li><strong>Allow Keychain access.</strong> On the first upload after each update, enter your Mac password and choose Always Allow.</li>
+  </ol>
+
+  <h2>Installing with an AI agent</h2>
+  <p>The installer never asks a question, so an agent can run it for you. Point it at <a href="/install-guide.txt">the install guide</a>, or have it run:</p>
+  <div class="cmd">
+    <pre><code>curl -fsSL https://get-pressshot.space.fast/install.sh | sh -s -- --json</code></pre>
+  </div>
+  <p class="note">It prints one JSON line with the result and the steps to hand back to you. <a href="/llms.txt">llms.txt</a> has the short version for agents.</p>
+
+  <h2>What it's built on</h2>
+  <p>PressShot is built on <a href="https://github.com/sw33tLie/macshot">MacShot</a> by sw33tLie and is licensed under the <a href="/LICENSE.txt">GNU General Public License v3.0</a>.</p>
+</main>
+<footer>
+  <p>Made by Derek Hanson. <a href="https://github.com/dhanson-wp/pressshot">Source on GitHub</a>.</p>
+</footer>
+<script>
+document.getElementById('copy').addEventListener('click', function () {
+  var b = this;
+  navigator.clipboard.writeText(document.getElementById('cmd').textContent).then(function () {
+    b.textContent = 'Copied'; setTimeout(function () { b.textContent = 'Copy'; }, 2000);
+  });
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>PressShotAuthServiceURL</key>
+	<string>$(PRESSSHOT_AUTH_SERVICE_URL)</string>
+	<key>NSAppTransportSecurity</key>
+	<dict><key>NSAllowsLocalNetworking</key><true/></dict>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>PressShot actions</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>pressshot</string>
+			</array>
+		</dict>
+	</array>
+	<key>CFBundleDocumentTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeName</key>
+			<string>Image</string>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>LSHandlerRank</key>
+			<string>Alternate</string>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>public.png</string>
+				<string>public.jpeg</string>
+				<string>public.tiff</string>
+				<string>com.compuserve.gif</string>
+				<string>public.heic</string>
+				<string>public.heif</string>
+				<string>org.webmproject.webp</string>
+				<string>com.microsoft.bmp</string>
+			</array>
+		</dict>
+		<dict>
+			<key>CFBundleTypeName</key>
+			<string>Video</string>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>LSHandlerRank</key>
+			<string>Alternate</string>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>public.mpeg-4</string>
+				<string>com.apple.quicktime-movie</string>
+				<string>com.apple.m4v-video</string>
+			</array>
+		</dict>
+	</array>
+	<key>NSScreenCaptureUsageDescription</key>
+	<string>PressShot needs screen recording permission to capture screenshots.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>PressShot can record microphone audio during screen recordings.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>PressShot can show a webcam overlay during screen recordings.</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>PressShot transcribes your recordings on this Mac to create captions. Audio is not uploaded.</string>
+	<key>SUEnableAutomaticChecks</key>
+	<false/>
+	<key>NSSupportsAutomaticTermination</key>
+	<false/>
+	<key>CFBundleDisplayName</key>
+	<string>PressShot</string>
+	<key>CFBundleName</key>
+	<string>PressShot</string>
+</dict>
+</plist>

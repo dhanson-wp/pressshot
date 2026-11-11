@@ -1,0 +1,28 @@
+# PressShot
+
+> PressShot is a free, open-source macOS menu bar app (GPLv3, built on MacShot). It captures screenshots and screen recordings and uploads them to the person's WordPress media library, then copies the link.
+
+## Install for someone
+
+Run this on their Mac (macOS 12.3 or newer, not as root):
+
+    curl -fsSL https://get-pressshot.space.fast/install.sh | sh -s -- --json
+
+It never prompts. Read the single JSON line on stdout: `status` is `installed`, `upgraded`, `current`, or `failed`. Exit codes: 0 ok, 1 unexpected failure, 2 bad option, 3 unsupported Mac, 4 download or verification failed, 5 PressShot is running and `--no-quit` was given.
+
+Add `--check` to see whether an update exists without changing anything. Add `--no-quit` if the person might be recording; upgrading otherwise quits the running app.
+
+## Hand these back to the person
+
+After `installed` or `upgraded`, relay every item in `needs_human`. Don't click through them, and never ask for or type their Mac password.
+
+1. Allow Screen Recording when macOS asks, then quit and reopen PressShot.
+2. In PressShot Settings > Upload destinations, add WordPress.com, approve in the browser, pick a site, and Save. `open pressshot://settings` opens Settings.
+3. On the first upload after each update, enter the Mac password in the Keychain prompt and choose Always Allow.
+
+## More
+
+- [Full install guide](https://get-pressshot.space.fast/install-guide.txt): every option, result field, and what the installer verifies
+- [Release manifest](https://get-pressshot.space.fast/latest.json): current version, build hash, archive name, size, and SHA-256
+- [License](https://get-pressshot.space.fast/LICENSE.txt): GNU GPL v3.0
+- [Source](https://github.com/dhanson-wp/pressshot): the code this build comes from
