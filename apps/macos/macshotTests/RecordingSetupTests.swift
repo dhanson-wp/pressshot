@@ -7,6 +7,7 @@ final class RecordingSetupTests: XCTestCase {
         withDefaults([
             "recordMouseHighlight": false, "recordKeystroke": false,
             "recordMicAudio": false, "recordWebcam": false,
+            "recordAINotes": false, "aiNotesControlNames": nil,
             "overlayToolShortcuts": nil,
         ]) {
             // Invalidate the shortcut cache both before use and before the
@@ -31,6 +32,27 @@ final class RecordingSetupTests: XCTestCase {
                 XCTAssertFalse(UserDefaults.standard.bool(forKey: key))
                 XCTAssertEqual(delegate.inputPermissionRequests, previousRequests + 1)
             }
+        }
+    }
+
+    func testAINotesButtonTogglesWithoutAskingForInputMonitoring() {
+        withOverlay { view, delegate in
+            view.permissionGranted = false
+            func button() -> ToolbarButton? {
+                ToolbarLayout.rightButtons(beautifyEnabled: false, beautifyStyleIndex: 0, hasAnnotations: false, isRecording: true)
+                    .first { if case .aiNotes = $0.action { return true }; return false }
+            }
+            XCTAssertEqual(button()?.sfSymbol, "sparkles")
+            XCTAssertEqual(button()?.isSelected, false, "AI notes are off until switched on")
+            XCTAssertEqual(button()?.hasContextMenu, true)
+
+            view.handleToolbarAction(.aiNotes)
+            XCTAssertTrue(UserDefaults.standard.bool(forKey: "recordAINotes"))
+            XCTAssertEqual(button()?.isSelected, true)
+            view.handleToolbarAction(.aiNotes)
+            XCTAssertFalse(UserDefaults.standard.bool(forKey: "recordAINotes"))
+            // Notes degrade without Input Monitoring; they never demand it.
+            XCTAssertEqual(delegate.inputPermissionRequests, 0)
         }
     }
 

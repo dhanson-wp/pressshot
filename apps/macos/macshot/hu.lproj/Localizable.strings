@@ -869,3 +869,16 @@
 
 /* PressShot automatic recording upload; English fallback where untranslated. */
 "Upload and copy link" = "Upload and copy link";
+
+/* AI notes: a written account of each recording for an AI assistant. */
+"AI Notes" = "AI-jegyzetek";
+"Write AI notes with each recording" = "AI-jegyzetek írása minden felvételhez";
+"Saves a transcript, key screenshots and what you clicked with each recording on this Mac, so an AI assistant can read it. Nothing is uploaded." = "Minden felvételhez átiratot, kulcsfontosságú képernyőképeket és a kattintásaidat menti ezen a Macen, hogy egy AI-asszisztens elolvashassa. Semmi nem kerül feltöltésre.";
+"Name clicked controls" = "A kattintott vezérlők megnevezése";
+"Control names need Accessibility access…" = "A vezérlők nevéhez Kisegítő lehetőségek hozzáférés szükséges…";
+"Typing activity needs Input Monitoring access…" = "A gépelési tevékenységhez Bemenetfigyelés hozzáférés szükséges…";
+"Show Latest AI Notes" = "Legutóbbi AI-jegyzetek megjelenítése";
+"Copy AI Notes Path" = "AI-jegyzetek útvonalának másolása";
+"Copy Claude Code Command" = "Claude Code parancs másolása";
+"AI notes could not be written." = "Az AI-jegyzeteket nem sikerült megírni.";
+"No AI notes yet. Turn on AI Notes in the recording toolbar, then record." = "Még nincsenek AI-jegyzetek. Kapcsold be az AI-jegyzeteket a felvételi eszköztáron, majd készíts felvételt.";

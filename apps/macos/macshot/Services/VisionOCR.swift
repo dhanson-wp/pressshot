@@ -73,7 +73,7 @@ enum VisionOCR {
                     let lines = observations.compactMap { observation -> OCRTextObservation? in
                         guard let candidate = observation.topCandidates(1).first else { return nil }
                         return OCRTextObservation(text: candidate.string,
-                            boundingBox: observation.boundingBox.cgRect,
+                            boundingBox: observation.boundingBox.cgRect, confidence: candidate.confidence,
                             substringBounds: { candidate.boundingBox(for: $0)?.boundingBox.cgRect })
                     }
                     completion(.success(lines))
@@ -100,7 +100,7 @@ enum VisionOCR {
                 let lines = (request.results ?? []).compactMap { observation -> OCRTextObservation? in
                     guard let candidate = observation.topCandidates(1).first else { return nil }
                     return OCRTextObservation(text: candidate.string,
-                        boundingBox: observation.boundingBox,
+                        boundingBox: observation.boundingBox, confidence: candidate.confidence,
                         substringBounds: { (try? candidate.boundingBox(for: $0))?.boundingBox })
                 }
                 completion(.success(lines))
@@ -182,12 +182,15 @@ enum VisionOCR {
 struct OCRTextObservation: @unchecked Sendable {
     let text: String
     let boundingBox: CGRect
+    /// The recogniser's confidence in `text`, 0...1. Icons read as letters score low.
+    let confidence: Float
     nonisolated(unsafe) private let substringBounds: (Range<String.Index>) -> CGRect?
 
-    nonisolated init(text: String, boundingBox: CGRect,
+    nonisolated init(text: String, boundingBox: CGRect, confidence: Float = 1,
                      substringBounds: @escaping (Range<String.Index>) -> CGRect? = { _ in nil }) {
         self.text = text
         self.boundingBox = boundingBox
+        self.confidence = confidence
         self.substringBounds = substringBounds
     }
 

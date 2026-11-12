@@ -871,3 +871,16 @@
 
 /* PressShot automatic recording upload; English fallback where untranslated. */
 "Upload and copy link" = "Upload and copy link";
+
+/* AI notes: a written account of each recording for an AI assistant. */
+"AI Notes" = "AI குறிப்புகள்";
+"Write AI notes with each recording" = "ஒவ்வொரு பதிவுடனும் AI குறிப்புகளை எழுது";
+"Saves a transcript, key screenshots and what you clicked with each recording on this Mac, so an AI assistant can read it. Nothing is uploaded." = "இந்த Mac-இல் ஒவ்வொரு பதிவுடனும் ஒரு எழுத்துப்படிவம், முக்கிய திரைப்பிடிப்புகள் மற்றும் நீங்கள் கிளிக் செய்தவற்றைச் சேமிக்கிறது, இதனால் ஒரு AI உதவியாளர் அதைப் படிக்க முடியும். எதுவும் பதிவேற்றப்படாது.";
+"Name clicked controls" = "கிளிக் செய்த கட்டுப்பாடுகளுக்குப் பெயரிடு";
+"Control names need Accessibility access…" = "கட்டுப்பாட்டுப் பெயர்களுக்கு அணுகல்தன்மை அனுமதி தேவை…";
+"Typing activity needs Input Monitoring access…" = "தட்டச்சு செயல்பாட்டிற்கு உள்ளீட்டுக் கண்காணிப்பு அனுமதி தேவை…";
+"Show Latest AI Notes" = "சமீபத்திய AI குறிப்புகளைக் காட்டு";
+"Copy AI Notes Path" = "AI குறிப்புகளின் பாதையை நகலெடு";
+"Copy Claude Code Command" = "Claude Code கட்டளையை நகலெடு";
+"AI notes could not be written." = "AI குறிப்புகளை எழுத முடியவில்லை.";
+"No AI notes yet. Turn on AI Notes in the recording toolbar, then record." = "இன்னும் AI குறிப்புகள் இல்லை. பதிவு கருவிப்பட்டியில் AI குறிப்புகளை இயக்கி, பின்னர் பதிவு செய்யவும்.";

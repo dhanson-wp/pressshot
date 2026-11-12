@@ -287,6 +287,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, SPUUpdaterDelegate {
         ImageSaveService.onFailure = { [weak self] message in
             self?.showFailureToast(message)
         }
+        AINotesCoordinator.shared.onFailure = { [weak self] message in
+            self?.showFailureToast(message)
+        }
 
         // Disable App Nap. macshot is LSUIElement with no visible windows
         // when idle, so macOS can add wake-up latency to global hotkey
@@ -633,6 +636,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, SPUUpdaterDelegate {
                         engine.stopRecording()
                     }
                 }
+                AINotesCoordinator.shared.prepareForTermination()
                 await MediaExportCoordinator.shared.waitUntilIdle()
                 await ScreenshotHistory.shared.waitUntilIdle()
             }, terminate: { sender.terminate(nil) })
@@ -900,6 +904,16 @@ class AppDelegate: NSObject, NSApplicationDelegate, SPUUpdaterDelegate {
         recordingsItem.target = self
         recordingsItem.image = NSImage(systemSymbolName: "folder", accessibilityDescription: nil)
         menu.addItem(recordingsItem)
+
+        let notesItem = NSMenuItem(title: L("Show Latest AI Notes"), action: #selector(showLatestAINotes), keyEquivalent: "")
+        notesItem.target = self
+        notesItem.image = NSImage(systemSymbolName: "sparkles", accessibilityDescription: nil)
+        menu.addItem(notesItem)
+
+        let notesPathItem = NSMenuItem(title: L("Copy AI Notes Path"), action: #selector(copyLatestAINotesPath), keyEquivalent: "")
+        notesPathItem.target = self
+        notesPathItem.image = NSImage(systemSymbolName: "doc.on.doc", accessibilityDescription: nil)
+        menu.addItem(notesPathItem)
 
         let pasteImageItem = NSMenuItem(title: L("Open from Clipboard"), action: #selector(openImageFromClipboard), keyEquivalent: "")
         pasteImageItem.target = self
@@ -2456,6 +2470,14 @@ class AppDelegate: NSObject, NSApplicationDelegate, SPUUpdaterDelegate {
         DetachedEditorWindowController.open(image: image, historyEntryID: id, disableBeautify: true)
     }
 
+    @objc private func showLatestAINotes() {
+        if !AINotesCoordinator.shared.revealLatest() { showFailureToast(L("No AI notes yet. Turn on AI Notes in the recording toolbar, then record.")) }
+    }
+
+    @objc private func copyLatestAINotesPath() {
+        if !AINotesCoordinator.shared.copyLatestPath() { showFailureToast(L("No AI notes yet. Turn on AI Notes in the recording toolbar, then record.")) }
+    }
+
     @objc private func showRecordingsInFinder() {
         let folder = RecordingSessionStore.rootURL
         do {
@@ -3025,6 +3047,10 @@ extension AppDelegate: OverlayWindowControllerDelegate {
         let hadSystemAudio = UserDefaults.standard.bool(forKey: "recordSystemAudio")
         let hadMicAudio = UserDefaults.standard.bool(forKey: "recordMicAudio")
 
+        engine.onNotesCaptured = { [weak self] notes, url in
+            // Quitting mid-recording still writes the notes, without waiting on a transcript.
+            AINotesCoordinator.shared.finish(notes, video: url, quitting: self?.terminatingAfterRecording ?? false)
+        }
         engine.onCompletion = { [weak self] url, error in
             guard let self = self else { return }
             self.stopRecordingUI()
