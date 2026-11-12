@@ -47,6 +47,17 @@ final class WordPressConnectionTests: XCTestCase {
         XCTAssertThrowsError(try pending.credential(from: callback(pending).deletingLastPathComponent()))
         XCTAssertThrowsError(try pending.credential(from: URL(string: callback(pending).absoluteString + "&password=other")!))
     }
+    func testApproveAddressIsShortUniqueAndNamesThisMac() throws {
+        let a = WordPressApproval(discovery: discovery), b = WordPressApproval(discovery: discovery)
+        XCTAssertNotEqual(a.nonce, b.nonce)
+        XCTAssertEqual(a.nonce.count, 16)
+        XCTAssertTrue(a.nonce.allSatisfy { "abcdefghjkmnpqrstuvwxyz23456789".contains($0) })
+        XCTAssertEqual(a.callbackURL.absoluteString, "pressshot://connect/" + a.nonce)
+        let browser = try XCTUnwrap(URLComponents(url: a.browserURL(), resolvingAgainstBaseURL: false))
+        let name = try XCTUnwrap(browser.queryItems?.first(where: { $0.name == "app_name" })?.value)
+        XCTAssertTrue(name.hasPrefix("PressShot on "))
+        XCTAssertLessThanOrEqual(name.count, 73)
+    }
     func testWordPressDoubleEncodingAndBrowserCancellation() throws {
         let pending = WordPressApproval(discovery: discovery)
         var c = URLComponents(url: pending.callbackURL, resolvingAgainstBaseURL: false)!
@@ -86,6 +97,25 @@ final class WordPressConnectionTests: XCTestCase {
         let discovered = try await client.discover(site.absoluteString)
         let verifiedID = try await client.verify(discovered, credential: credential)
         XCTAssertEqual(verifiedID, 7)
+    }
+    func testPrivateSiteFallsBackToStandardApprovalOnTheSameSite() async throws {
+        let site = self.site
+        let privateSite = try json(["code": "private_site", "message": "This site is private.", "data": ["status": 403]])
+        let result = try await client { req in
+            XCTAssertNil(req.value(forHTTPHeaderField: "Authorization"))
+            return (403, privateSite)
+        }.discover(site.absoluteString)
+        XCTAssertEqual(result.siteURL, site)
+        XCTAssertEqual(result.apiURL, site.appendingPathComponent("wp-json/"))
+        XCTAssertEqual(result.authorizationURL, site.appendingPathComponent("wp-admin/authorize-application.php"))
+        let browser = try XCTUnwrap(URLComponents(url: WordPressApproval(discovery: result).browserURL(), resolvingAgainstBaseURL: false))
+        XCTAssertEqual(browser.host, site.host)
+    }
+    func testUnrecognizedForbiddenResponseIsNotTreatedAsWordPress() async throws {
+        for body in [Data("<html>Forbidden</html>".utf8), try json(["code": "something_else"])] {
+            do { _ = try await client { _ in (403, body) }.discover(site.absoluteString); XCTFail("Non-WordPress 403 accepted") }
+            catch { XCTAssertEqual(error as? WordPressConnectionError, .discovery) }
+        }
     }
     func testNoUploadCapabilityOrRejectedPasswordFailsVerification() async throws {
         for (code, body) in [(200, try json(["id": 3, "capabilities": ["upload_files": false]])), (401, Data("{}".utf8)), (403, Data("{}".utf8))] {

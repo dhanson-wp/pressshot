@@ -67,14 +67,28 @@ struct WordPressApproval {
     let nonce: String
     let expires: Date
     init(discovery: WordPressDiscovery, now: Date = Date()) {
-        self.discovery = discovery; nonce = UUID().uuidString + UUID().uuidString
+        self.discovery = discovery; nonce = Self.makeNonce()
         expires = now.addingTimeInterval(600)
     }
-    var callbackURL: URL { URL(string: "pressshot://wordpress-authorize/" + nonce)! }
+    /// WordPress prints this address on its Approve page, so keep it short:
+    /// 16 random characters from a 31-character alphabet (about 79 bits), lowercase and unambiguous.
+    static func makeNonce() -> String {
+        let alphabet = Array("abcdefghjkmnpqrstuvwxyz23456789")
+        var generator = SystemRandomNumberGenerator()
+        return String((0..<16).map { _ in alphabet[Int(generator.next(upperBound: UInt32(alphabet.count)))] })
+    }
+    var callbackURL: URL { URL(string: "pressshot://connect/" + nonce)! }
+    /// Shown on the Approve page and in the site's Application passwords list, so
+    /// each Mac's password is easy to recognize later.
+    static var appName: String {
+        let name = (Host.current().localizedName ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !name.isEmpty else { return "PressShot on this Mac" }
+        return "PressShot on " + String(name.prefix(60))
+    }
     func browserURL() throws -> URL {
         guard let url = discovery.authorizationURL, var c = URLComponents(url: url, resolvingAgainstBaseURL: false) else { throw WordPressConnectionError.browserUnavailable }
         c.queryItems = (c.queryItems ?? []) + [
-            .init(name: "app_name", value: "PressShot on this Mac"),
+            .init(name: "app_name", value: Self.appName),
             .init(name: "app_id", value: "a2e78a3c-71d1-490c-9f52-376bf76d74ee"),
             .init(name: "success_url", value: callbackURL.absoluteString),
             .init(name: "reject_url", value: callbackURL.absoluteString + "?success=false")
@@ -141,9 +155,11 @@ final class WordPressClient {
         let site = try WordPressURLRules.site(text)
         var plain = URLComponents(url: site, resolvingAgainstBaseURL: false)!
         plain.queryItems = [.init(name: "rest_route", value: "/")]
+        var signInRequired = false
         for api in [site.appendingPathComponent("wp-json/"), plain.url!] {
             do {
                 let (data, response) = try await session.data(for: request(api))
+                if Self.signInRequired(data, response: response) { signInRequired = true; continue }
                 let json = try object(data, response: response)
                 guard let namespaces = json["namespaces"] as? [String], namespaces.contains("wp/v2"),
                       let routes = json["routes"] as? [String: Any], routes["/wp/v2/media"] != nil,
@@ -157,7 +173,21 @@ final class WordPressClient {
             } catch is CancellationError { throw CancellationError() }
             catch { continue }
         }
+        // A private site (WordPress.com private mode, or a plugin that closes the REST index)
+        // turns away signed-out requests. Use core's standard addresses on the address the user
+        // typed; the signed-in approval and verify() then prove the site and upload permission.
+        if signInRequired {
+            return .init(siteURL: site, apiURL: site.appendingPathComponent("wp-json/"), title: site.host!,
+                         authorizationURL: site.appendingPathComponent("wp-admin/authorize-application.php"))
+        }
         throw WordPressConnectionError.discovery
+    }
+    /// WordPress's own "sign in first" answers, as opposed to a missing or broken API.
+    static func signInRequired(_ data: Data, response: URLResponse) -> Bool {
+        guard let http = response as? HTTPURLResponse, [401, 403].contains(http.statusCode),
+              let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+              let code = json["code"] as? String else { return false }
+        return ["private_site", "rest_login_required", "rest_not_logged_in", "rest_cannot_access"].contains(code)
     }
     func verify(_ discovery: WordPressDiscovery, credential: WordPressCredential) async throws -> Int {
         var c = URLComponents(url: discovery.endpoint("wp/v2/users/me"), resolvingAgainstBaseURL: false)!

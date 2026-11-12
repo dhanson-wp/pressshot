@@ -37,6 +37,11 @@ done
 
 VERSION="$("$PLIST" -c 'Print :CFBundleShortVersionString' "$APP/Contents/Info.plist")"
 MIN_OS="$("$PLIST" -c 'Print :LSMinimumSystemVersion' "$APP/Contents/Info.plist")"
+AUTH_SERVICE="$("$PLIST" -c 'Print :PressShotAuthServiceURL' "$APP/Contents/Info.plist" 2>/dev/null || true)"
+case "$AUTH_SERVICE" in
+    https://?*) ;;
+    *) die "this build has no WordPress.com sign-in address (PressShotAuthServiceURL), so the WordPress.com button wouldn't work." ;;
+esac
 BUILD="$(/usr/bin/codesign -dvvv "$APP" 2>&1 | sed -n 's/^CDHash=//p' | head -1)"
 [ -n "$VERSION" ] && [ -n "$BUILD" ] || die "couldn't read the app's version or build hash."
 ARCHS="$(/usr/bin/lipo -archs "$APP/Contents/MacOS/PressShot")"

@@ -53,7 +53,7 @@ final class WordPressSettingsPane: NSView {
         hasWordPressDestination = hasWordPressDestination || !WPComDestinationsStore.shared.destinations.isEmpty
         #endif
         if !hasWordPressDestination {
-            stack.addArrangedSubview(label("Connect a personal WordPress site to get started. Until you choose a primary destination, captures stay on this Mac."))
+            stack.addArrangedSubview(label("Connect a WordPress site to get started. You'll approve PressShot on the site, and nothing needs to be copied or pasted."))
         }
         for destination in WordPressDestinationsStore.shared.destinations {
             let text = NSStackView(views: [label(destination.title, size: 13, bold: true), label(destination.siteURL.absoluteString + "\nDirect file links · " + destination.username, size: 11)])
@@ -78,7 +78,7 @@ final class WordPressSettingsPane: NSView {
             if primary && !destination.hasVideoPress { stack.addArrangedSubview(label("Recordings are saved locally while your primary destination is screenshot-only.", size: 11)) }
         }
         #endif
-        let add = button("Add destination", action: #selector(addSite))
+        let add = button("Connect a site", action: #selector(addSite))
         add.keyEquivalent = ""; stack.addArrangedSubview(add)
         stack.addArrangedSubview(label("Direct links follow your WordPress site's media-access rules. A PressShot library and revocable share pages aren't connected in this first version.", size: 11))
         let providers = button("Google Drive, imgbb, and S3 settings…", action: #selector(otherProviders))
@@ -97,11 +97,9 @@ final class WordPressSettingsPane: NSView {
         if let d = WordPressDestinationsStore.shared.destination(provider: id) { WordPressDestinationsStore.shared.makePrimary(d) }
         else { UserDefaults.standard.set(id, forKey: "uploadProvider"); NotificationCenter.default.post(name: WordPressDestinationsStore.changed, object: nil) }
     }
-    @objc private func addSite() {
-        #if !OFFLINE
-        connectAccount()
-        #endif
-    }
+    // WordPress.com account sign-in is parked: its loopback callback isn't reliable yet.
+    // Every new destination uses the site's own Approve page instead.
+    @objc private func addSite() { connect(site: nil) }
     #if !OFFLINE
     private func connectAccount(reconnecting: WPComDestination? = nil) {
         guard let window, accountSheet == nil, connectionSheet == nil else { return }
@@ -194,7 +192,9 @@ final class WordPressConnectionSheet: NSObject, ASWebAuthenticationPresentationC
     @objc private func nextStep() {
         if let verified {
             do {
-                _ = try WordPressDestinationsStore.shared.save(discovery: verified.0, credential: verified.1, userID: verified.2)
+                let store = WordPressDestinationsStore.shared
+                let destination = try store.save(discovery: verified.0, credential: verified.1, userID: verified.2)
+                if PressShotDestinations.primary == nil { store.makePrimary(destination) }
                 close()
             } catch { failed(error) }
             return
@@ -236,7 +236,7 @@ final class WordPressConnectionSheet: NSObject, ASWebAuthenticationPresentationC
             guard !closed else { return }
             verified = (discovery, credential, userID)
             heading.stringValue = "WordPress connection verified"
-            note.stringValue = "\(discovery.title)\n\(discovery.siteURL.absoluteString)\n\nUploads allowed. This site uses direct file links, which follow the site's media-access rules. A PressShot library and revocable share pages aren't connected yet.\n\nSave keeps your current primary choice. Choose Make primary in Upload destinations when you’re ready."
+            note.stringValue = "\(discovery.title)\n\(discovery.siteURL.absoluteString)\n\nUploads allowed. This site uses direct file links, which follow the site's media-access rules. A PressShot library and revocable share pages aren't connected yet.\n\n" + (PressShotDestinations.primary == nil ? "Save makes this site your primary destination, so captures upload here." : "Save keeps your current primary choice. Choose Make primary in Upload destinations when you’re ready.")
             siteField.isHidden = true; userField.isHidden = true; passwordField.stringValue = ""; passwordField.isHidden = true; fallback.isHidden = true
             primary.title = "Save destination"; primary.isEnabled = true
         } catch { failed(error) }
