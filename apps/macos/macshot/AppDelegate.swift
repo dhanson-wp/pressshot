@@ -290,6 +290,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, SPUUpdaterDelegate {
         AINotesCoordinator.shared.onFailure = { [weak self] message in
             self?.showFailureToast(message)
         }
+        AINotesElementInspector.restoreAbandonedWebContent()
 
         // Disable App Nap. macshot is LSUIElement with no visible windows
         // when idle, so macOS can add wake-up latency to global hotkey
@@ -1080,7 +1081,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, SPUUpdaterDelegate {
     }
     private var pendingFullScreen: Bool = false
     private var pendingFullScreenRecord: Bool = false
-    private var pendingFullScreenRecordAutoStart: Bool = false
     private var pendingOCRMode: Bool = false
     private var pendingTranslateOverlayMode: Bool = false
     private var pendingTranslateOverlayLang: String?
@@ -1304,9 +1304,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, SPUUpdaterDelegate {
     private func beginRecordFullScreen(fromMenu: Bool) {
         guard canStartCapture else { return }
         pendingFullScreenRecord = true
-        if UserDefaults.standard.integer(forKey: "captureDelaySeconds") > 0 {
-            pendingFullScreenRecordAutoStart = true
-        }
         startCapture(fromMenu: fromMenu)
     }
 
@@ -1397,7 +1394,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, SPUUpdaterDelegate {
         let delay = UserDefaults.standard.integer(forKey: "captureDelaySeconds")
         trace?.mark("capture delay read delay=\(delay)")
 
-        if delay > 0 {
+        // A recording counts down after "Start Recording" is clicked
+        // (overlayDidRequestStartRecording), once the area and options are
+        // chosen, so it skips the countdown that precedes a screenshot.
+        let isRecordingCapture = pendingRecordMode || pendingFullScreenRecord
+        if delay > 0 && !isRecordingCapture {
             captureTimingTrace?.mark("showPreCaptureCountdown requested")
             showPreCaptureCountdown(seconds: delay)
             return
@@ -1409,7 +1410,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, SPUUpdaterDelegate {
     private func showPreCaptureCountdown(seconds: Int) {
         // No display to show a countdown on (all asleep, or headless).
         guard let screen = NSScreen.preferred else { return }
-        let size = NSSize(width: 140, height: 140)
+        let size = CountdownView.preferredSize
         let origin = NSPoint(
             x: screen.frame.midX - size.width / 2,
             y: screen.frame.midY - size.height / 2
@@ -1427,8 +1428,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, SPUUpdaterDelegate {
         window.hasShadow = false
         window.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
 
-        let countdownView = CountdownView(frame: NSRect(origin: .zero, size: size))
-        countdownView.remaining = seconds
+        let countdownView = CountdownView(seconds: seconds)
         window.contentView = countdownView
         NSApp.activate(ignoringOtherApps: true)
         window.makeKeyAndOrderFront(nil)
@@ -1456,8 +1456,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, SPUUpdaterDelegate {
                 self?.removeDelayEscMonitors()
                 self?.performCapture(fromMenu: false)
             } else {
-                countdownView.remaining = remaining
-                countdownView.needsDisplay = true
+                countdownView.tick(to: remaining)
             }
         }
     }
@@ -1476,7 +1475,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, SPUUpdaterDelegate {
         pendingRecordMode = false
         pendingFullScreen = false
         pendingFullScreenRecord = false
-        pendingFullScreenRecordAutoStart = false
         pendingOCRMode = false
         pendingTranslateOverlayMode = false
         pendingTranslateOverlayLang = nil
@@ -1535,9 +1533,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, SPUUpdaterDelegate {
 
         pendingRecordMode = false
         let didApplyFullScreenRecord = pendingFullScreenRecord
-        let didApplyFullScreenRecordAutoStart = pendingFullScreenRecordAutoStart
         let didApplyFullScreen = pendingFullScreen
-        pendingFullScreenRecordAutoStart = false
         pendingOCRMode = false
         pendingTranslateOverlayMode = false
         pendingTranslateOverlayLang = nil
@@ -1584,7 +1580,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, SPUUpdaterDelegate {
                             mouseScreen: mouseScreen,
                             applyFullScreen: didApplyFullScreen,
                             applyFullScreenRecord: didApplyFullScreenRecord,
-                            autoStartRecord: didApplyFullScreenRecordAutoStart,
                             markInteractive: isFirst)
                         // Showing a later display makes it key; keep the keyboard
                         // on the display the user is working on.
@@ -1612,7 +1607,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, SPUUpdaterDelegate {
                         mouseScreen: mouseScreen,
                         applyFullScreen: didApplyFullScreen,
                         applyFullScreenRecord: didApplyFullScreenRecord,
-                        autoStartRecord: didApplyFullScreenRecordAutoStart,
                         markInteractive: false)
                     self.refocusOverlay(among: controllers, installed: nil)
                     return
@@ -1622,8 +1616,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, SPUUpdaterDelegate {
                     controllers: controllers,
                     mouseScreen: mouseScreen,
                     applyFullScreen: didApplyFullScreen,
-                    applyFullScreenRecord: didApplyFullScreenRecord,
-                    autoStartRecord: didApplyFullScreenRecordAutoStart)
+                    applyFullScreenRecord: didApplyFullScreenRecord)
             }
         }
     }
@@ -1648,7 +1641,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, SPUUpdaterDelegate {
         mouseScreen: NSScreen?,
         applyFullScreen: Bool,
         applyFullScreenRecord: Bool,
-        autoStartRecord: Bool,
         markInteractive: Bool = true
     ) {
         if captures.isEmpty {
@@ -1683,9 +1675,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, SPUUpdaterDelegate {
             }
             if applyFullScreenRecord && isMouseScreen {
                 controller.enterRecordingMode()
-                if autoStartRecord {
-                    controller.autoStartRecording()
-                }
             }
         }
 
@@ -2955,7 +2944,7 @@ extension AppDelegate: OverlayWindowControllerDelegate {
     private func startRecordingCountdown(seconds: Int, rect: NSRect, screen: NSScreen,
                                           fpsOverride: Int?,
                                           onStopOverride: String?) {
-        let size = NSSize(width: 140, height: 140)
+        let size = CountdownView.preferredSize
         let origin = NSPoint(
             x: rect.midX - size.width / 2,
             y: rect.midY - size.height / 2
@@ -2974,8 +2963,7 @@ extension AppDelegate: OverlayWindowControllerDelegate {
         window.ignoresMouseEvents = true
         window.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
 
-        let countdownView = CountdownView(frame: NSRect(origin: .zero, size: size))
-        countdownView.remaining = seconds
+        let countdownView = CountdownView(seconds: seconds)
         window.contentView = countdownView
         window.makeKeyAndOrderFront(nil)
         delayCountdownWindow = window
@@ -3009,8 +2997,7 @@ extension AppDelegate: OverlayWindowControllerDelegate {
                                      fpsOverride: fpsOverride,
                                      onStopOverride: onStopOverride)
             } else {
-                countdownView.remaining = remaining
-                countdownView.needsDisplay = true
+                countdownView.tick(to: remaining)
             }
         }
     }

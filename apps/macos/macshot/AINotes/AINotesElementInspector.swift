@@ -1,3 +1,4 @@
+import AppKit
 import ApplicationServices
 import CoreGraphics
 import Foundation
@@ -48,6 +49,18 @@ nonisolated enum AINotesElementInspector {
     }
 
     private static let enhancedInterface = "AXEnhancedUserInterface"
+
+    /// Puts back what a recording that never reached its end (a crash, a force quit) left switched
+    /// on in browsers that are still running. Called once at launch.
+    static func restoreAbandonedWebContent(ledger: AINotesBrowserLedger = AINotesBrowserLedger()) {
+        let entries = ledger.entries
+        guard !entries.isEmpty else { return }
+        let running = NSWorkspace.shared.runningApplications.map {
+            AINotesBrowserLedger.Entry(pid: $0.processIdentifier, bundleID: $0.bundleIdentifier ?? "")
+        }
+        AINotesBrowserLedger.stillRunning(entries, among: running).forEach { restoreWebContent(pid: $0.pid) }
+        ledger.clear()
+    }
 
     /// `point` is in Core Graphics screen space (top-left origin).
     ///
@@ -200,5 +213,51 @@ nonisolated private extension AXUIElement {
         var value: CFTypeRef?
         guard AXUIElementCopyAttributeValue(self, name as CFString, &value) == .success else { return nil }
         return value
+    }
+}
+
+/// Remembers, across launches, which browsers a recording asked to publish their page elements,
+/// so the request can be withdrawn even when the recording never got to withdraw it itself.
+nonisolated struct AINotesBrowserLedger: Sendable {
+    struct Entry: Equatable, Sendable {
+        var pid: pid_t
+        var bundleID: String
+    }
+
+    static let key = "aiNotesExposedBrowsers"
+    nonisolated(unsafe) private let defaults: UserDefaults
+
+    init(defaults: UserDefaults = .standard) {
+        self.defaults = defaults
+    }
+
+    var entries: [Entry] {
+        (defaults.array(forKey: Self.key) as? [[String: Any]] ?? []).compactMap { item in
+            guard let pid = item["pid"] as? Int, let bundleID = item["bundleID"] as? String else { return nil }
+            return Entry(pid: pid_t(pid), bundleID: bundleID)
+        }
+    }
+
+    func add(pid: pid_t, bundleID: String) {
+        save(entries.filter { $0.pid != pid } + [Entry(pid: pid, bundleID: bundleID)])
+    }
+
+    func remove(pid: pid_t) {
+        save(entries.filter { $0.pid != pid })
+    }
+
+    func clear() {
+        defaults.removeObject(forKey: Self.key)
+    }
+
+    private func save(_ entries: [Entry]) {
+        guard !entries.isEmpty else { return clear() }
+        defaults.set(entries.map { ["pid": Int($0.pid), "bundleID": $0.bundleID] }, forKey: Self.key)
+    }
+
+    /// The remembered browsers that are still the same running app. A process id is reused once
+    /// its app has quit, so one that now belongs to a different app is left alone.
+    static func stillRunning(_ entries: [Entry], among running: [Entry]) -> [Entry] {
+        entries.filter { running.contains($0) }
     }
 }
