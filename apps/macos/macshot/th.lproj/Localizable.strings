@@ -869,3 +869,16 @@
 
 /* PressShot automatic recording upload; English fallback where untranslated. */
 "Upload and copy link" = "Upload and copy link";
+
+/* AI notes: a written account of each recording for an AI assistant. */
+"AI Notes" = "โน้ต AI";
+"Write AI notes with each recording" = "เขียนโน้ต AI พร้อมการบันทึกทุกครั้ง";
+"Saves a transcript, key screenshots and what you clicked with each recording on this Mac, so an AI assistant can read it. Nothing is uploaded." = "บันทึกคำถอดเสียง ภาพหน้าจอสำคัญ และสิ่งที่คุณคลิกไว้กับการบันทึกแต่ละครั้งบน Mac เครื่องนี้ เพื่อให้ผู้ช่วย AI อ่านได้ ไม่มีการอัปโหลดใด ๆ";
+"Name clicked controls" = "ตั้งชื่อตัวควบคุมที่คลิก";
+"Control names need Accessibility access…" = "ชื่อตัวควบคุมต้องใช้สิทธิ์การช่วยการเข้าถึง…";
+"Typing activity needs Input Monitoring access…" = "กิจกรรมการพิมพ์ต้องใช้สิทธิ์การตรวจสอบอินพุต…";
+"Show Latest AI Notes" = "แสดงโน้ต AI ล่าสุด";
+"Copy AI Notes Path" = "คัดลอกพาธของโน้ต AI";
+"Copy Claude Code Command" = "คัดลอกคำสั่ง Claude Code";
+"AI notes could not be written." = "ไม่สามารถเขียนโน้ต AI ได้";
+"No AI notes yet. Turn on AI Notes in the recording toolbar, then record." = "ยังไม่มีโน้ต AI เปิดโน้ต AI ในแถบเครื่องมือการบันทึก แล้วจึงบันทึก";

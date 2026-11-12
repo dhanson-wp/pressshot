@@ -60,6 +60,12 @@ final class RecordingEngine: NSObject {
     /// before starting). Finished before the take completes.
     var cameraRecorder: VideoCameraRecorder?
     var onCameraFinished: (() -> Void)?
+    /// Timeline and key frames gathered for AI notes. Optional like pointer
+    /// data: a failure here never affects the video.
+    private var aiNotes: AINotesSession?
+    /// Invoked (main actor) with what was gathered and the finished recording,
+    /// just before `onCompletion`.
+    var onNotesCaptured: ((AINotesCapture, URL) -> Void)?
 
     // MARK: - Callbacks
 
@@ -114,6 +120,7 @@ final class RecordingEngine: NSObject {
             configuration.hidesCursor = editablePointer
             configuration.overlaysInTelemetry = editablePointer
             configuration.cameraWindowID = cameraWindowID
+            configuration.aiNotes = AINotesOptions.current(defaults)
         } catch {
             guard lifecycle.begin() != nil else { return }
             stopRecording(error: error)
@@ -173,6 +180,7 @@ final class RecordingEngine: NSObject {
         writerSession?.pause()
         cursorTelemetry?.pause()
         cameraRecorder?.pause()
+        aiNotes?.pause()
         progressTimer?.invalidate()
         progressTimer = nil
         onPauseChanged?(true)
@@ -184,6 +192,7 @@ final class RecordingEngine: NSObject {
         writerSession?.resume(addingPausedDuration: pausedFor)
         cursorTelemetry?.resume(pausedDuration: pausedFor)
         cameraRecorder?.resume(pausedDuration: pausedFor)
+        aiNotes?.resume(pausedDuration: pausedFor)
         startProgressTimer()
         onPauseChanged?(false)
     }
@@ -316,7 +325,14 @@ final class RecordingEngine: NSObject {
                 cursorTelemetry = try? CursorTelemetryRecorder(
                     url: stored.directoryURL.appendingPathComponent(CursorTelemetry.filename), region: region, header: header)
             }
+            if let options = configuration.aiNotes, let region = configuration.pointerRegion {
+                aiNotes = try? AINotesSession(
+                    takeFolder: stored.directoryURL, region: region, videoSize: CGSize(width: pixelW, height: pixelH),
+                    options: options, microphone: configuration.microphone,
+                    menuBarFraction: AINotesSession.menuBarFraction(region: region, displayID: configuration.displayID))
+            }
             let telemetry = cursorTelemetry
+            let notes = aiNotes
             let camera = cameraRecorder
             camera?.open(directory: stored.directoryURL)
             if let camera, let cameraWindow = configuration.cameraWindowID {
@@ -343,6 +359,7 @@ final class RecordingEngine: NSObject {
                 onSessionStart: { time in
                     telemetry?.markStart(hostTime: time.seconds)
                     camera?.markStart(hostTime: time.seconds)
+                    notes?.markStart(hostTime: time.seconds)
                 })
             self.writerSession = writer
 
@@ -351,6 +368,7 @@ final class RecordingEngine: NSObject {
             let output = RecordingStreamOutput()
             output.onFrame = { pixelBuffer, presentationTime in
                 writer.handleFrame(pixelBuffer: pixelBuffer, presentationTime: presentationTime)
+                notes?.frames.update(pixelBuffer)
             }
             output.onAudioSample = { sampleBuffer in
                 writer.handleSystemAudioSample(sampleBuffer)
@@ -405,6 +423,7 @@ final class RecordingEngine: NSObject {
                 telemetry.start()
                 onTelemetryStarted?(telemetry)
             }
+            aiNotes?.start()
 
             startProgressTimer()
 
@@ -428,6 +447,8 @@ final class RecordingEngine: NSObject {
         streamOutput = nil
         cursorTelemetry?.stop()
         cursorTelemetry = nil
+        let notes = aiNotes?.stop()
+        aiNotes = nil
         if let camera = cameraRecorder {
             onCameraFinished?()
             await camera.finish()
@@ -440,15 +461,20 @@ final class RecordingEngine: NSObject {
             // Nothing was ever written — the session was stopped before the
             // stream came up. Reporting success with a nil URL made the UI
             // tear down silently, as if the recording had never happened.
+            notes?.discard()
             complete(sessionID: sessionID, url: nil, error: captureError ?? RecordingError.stoppedBeforeStart)
             return
         }
         do {
             try await writer.finish()
             writerSession = nil
+            if let notes {
+                if let url = outputURL, lifecycle.isCurrent(sessionID) { onNotesCaptured?(notes, url) } else { notes.discard() }
+            }
             complete(sessionID: sessionID, url: outputURL, error: captureError)
         } catch {
             writerSession = nil
+            notes?.discard()
             // Preserve partial media for the session-recovery path. Never
             // delete the user's only recording merely because finish failed.
             complete(sessionID: sessionID, url: nil, error: captureError ?? error)
@@ -476,6 +502,9 @@ final class RecordingEngine: NSObject {
         guard lifecycle.finish(sessionID) else { return }
         cursorTelemetry?.stop()
         cursorTelemetry = nil
+        // Setup failed before finalization: nothing was recorded to take notes on.
+        aiNotes?.cancel()
+        aiNotes = nil
         if let camera = cameraRecorder {
             // Setup failed before finalization: release the camera file.
             onCameraFinished?()

@@ -24,6 +24,8 @@ struct RecordingConfiguration {
     var overlaysInTelemetry = false
     /// Webcam window excluded because the camera records to its own file.
     var cameraWindowID: CGWindowID?
+    /// Write AI notes for this take; nil when the option is off.
+    var aiNotes: AINotesOptions?
 
     init(displayID: CGDirectDisplayID, rect: CGRect, displayBounds: CGRect,
          backingScale: CGFloat, frameRate: Int, microphone: Bool, systemAudio: Bool,

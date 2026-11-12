@@ -869,3 +869,16 @@
 
 /* PressShot automatic recording upload; English fallback where untranslated. */
 "Upload and copy link" = "Upload and copy link";
+
+/* AI notes: a written account of each recording for an AI assistant. */
+"AI Notes" = "Нотатки для ШІ";
+"Write AI notes with each recording" = "Писати нотатки для ШІ з кожним записом";
+"Saves a transcript, key screenshots and what you clicked with each recording on this Mac, so an AI assistant can read it. Nothing is uploaded." = "Зберігає розшифровку, ключові знімки екрана та те, що ви натискали, з кожним записом на цьому Mac, щоб ШІ-асистент міг це прочитати. Нічого не вивантажується.";
+"Name clicked controls" = "Називати натиснуті елементи керування";
+"Control names need Accessibility access…" = "Для назв елементів керування потрібен доступ до Універсального доступу…";
+"Typing activity needs Input Monitoring access…" = "Для активності набору потрібен доступ до Моніторингу введення…";
+"Show Latest AI Notes" = "Показати останні нотатки для ШІ";
+"Copy AI Notes Path" = "Скопіювати шлях до нотаток для ШІ";
+"Copy Claude Code Command" = "Скопіювати команду Claude Code";
+"AI notes could not be written." = "Не вдалося записати нотатки для ШІ.";
+"No AI notes yet. Turn on AI Notes in the recording toolbar, then record." = "Нотаток для ШІ ще немає. Увімкніть Нотатки для ШІ на панелі запису, потім запишіть.";

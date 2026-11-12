@@ -1868,6 +1868,26 @@ class SettingsWindowController: NSWindowController, NSToolbarDelegate, NSWindowD
         stack.addArrangedSubview(scrollFrozenDetectionCheckbox)
         stack.setCustomSpacing(20, after: stack.arrangedSubviews.last!)
 
+        // ── AI Notes ──
+        stack.addArrangedSubview(sectionHeader(L("AI Notes")))
+        stack.setCustomSpacing(10, after: stack.arrangedSubviews.last!)
+
+        let aiNotesCheckbox = NSButton(checkboxWithTitle: L("Write AI notes with each recording"),
+                                       target: self, action: #selector(aiNotesChanged(_:)))
+        aiNotesCheckbox.state = UserDefaults.standard.bool(forKey: AINotesOptions.enabledKey) ? .on : .off
+        stack.addArrangedSubview(aiNotesCheckbox)
+        let aiNotesNote = NSTextField(wrappingLabelWithString: L("Saves a transcript, key screenshots and what you clicked with each recording on this Mac, so an AI assistant can read it. Nothing is uploaded."))
+        aiNotesNote.font = NSFont.systemFont(ofSize: 10)
+        aiNotesNote.textColor = .secondaryLabelColor
+        aiNotesNote.preferredMaxLayoutWidth = 420
+        stack.addArrangedSubview(aiNotesNote)
+        stack.setCustomSpacing(10, after: stack.arrangedSubviews.last!)
+
+        let claudeCommandButton = NSButton(title: L("Copy Claude Code Command"), target: self, action: #selector(copyClaudeCodeCommand(_:)))
+        claudeCommandButton.bezelStyle = .rounded
+        stack.addArrangedSubview(claudeCommandButton)
+        stack.setCustomSpacing(20, after: stack.arrangedSubviews.last!)
+
         // Spacer to absorb remaining height, keeping content pinned to top
         let spacer = NSView()
         spacer.translatesAutoresizingMaskIntoConstraints = false
@@ -2955,6 +2975,15 @@ class SettingsWindowController: NSWindowController, NSToolbarDelegate, NSWindowD
         let fps = fpsOptions[min(sender.indexOfSelectedItem, fpsOptions.count - 1)]
         UserDefaults.standard.set(fps, forKey: "recordingFPS")
     }
+    @objc private func aiNotesChanged(_ sender: NSButton) {
+        UserDefaults.standard.set(sender.state == .on, forKey: AINotesOptions.enabledKey)
+    }
+
+    @objc private func copyClaudeCodeCommand(_ sender: NSButton) {
+        NSPasteboard.general.clearContents()
+        NSPasteboard.general.setString(AINotesCoordinator.claudeCodeCommand, forType: .string)
+    }
+
     @objc private func editablePointerChanged(_ sender: NSButton) {
         UserDefaults.standard.set(sender.state == .on, forKey: AppDelegate.editablePointerDefaultsKey)
     }

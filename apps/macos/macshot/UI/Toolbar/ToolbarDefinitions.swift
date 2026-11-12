@@ -42,6 +42,7 @@ enum ToolbarButtonAction {
     case showKeystrokes
     case webcam
     case recordSettings  // recording mode: open format/FPS/when-done popover
+    case aiNotes  // recording mode: write AI notes (llm.md) with the take
     case effects  // image effects (CIFilter adjustments + presets)
 }
 
@@ -461,6 +462,12 @@ class ToolbarLayout {
             webcamBtn.isSelected = webcamOn
             webcamBtn.hasContextMenu = true
             buttons.append(webcamBtn)
+
+            // AI notes: a written account of the take for an AI assistant
+            var notesBtn = ToolbarButton(action: .aiNotes, sfSymbol: "sparkles", tooltip: L("AI Notes"))
+            notesBtn.isSelected = UserDefaults.standard.bool(forKey: AINotesOptions.enabledKey)
+            notesBtn.hasContextMenu = true
+            buttons.append(notesBtn)
 
             // Recording settings gear
             buttons.append(
