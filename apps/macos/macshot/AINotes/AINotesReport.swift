@@ -161,8 +161,9 @@ nonisolated enum AINotesReport {
         if document.transcript.isEmpty {
             out.append(document.narration.status == "transcribed" ? "No speech was recognised." : "No transcript.")
         } else {
+            // A list, so a Markdown viewer keeps one cue to a line instead of running them together.
             for cue in document.transcript {
-                out.append("[\(clock(cue.start))] \(cue.text)")
+                out.append("- [\(clock(cue.start))] \(cue.text)")
             }
         }
         out.append("")

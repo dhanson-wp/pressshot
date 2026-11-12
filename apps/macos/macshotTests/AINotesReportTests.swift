@@ -40,7 +40,7 @@ final class AINotesReportTests: XCTestCase {
         XCTAssertTrue(text.contains("00:11  [click]  button \"Place order\" at (1412, 880) [#place-order.btn]   → frames/f02-00m11s-click.jpg"))
         XCTAssertTrue(text.contains("00:06  [voice]  \"So if I hit place order\""))
         XCTAssertTrue(text.contains("- Video file: ../Test.mp4"), "the take sits one folder up from its notes")
-        XCTAssertTrue(text.contains("[00:06] So if I hit place order"))
+        XCTAssertTrue(text.contains("\n- [00:06] So if I hit place order"))
     }
 
     func testPreambleSaysWhatTheNotesLack() {
