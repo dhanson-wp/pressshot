@@ -471,11 +471,10 @@ class SettingsWindowController: NSWindowController, NSToolbarDelegate, NSWindowD
 
         autoUpdateCheckbox = NSButton(checkboxWithTitle: L("Check for updates automatically"), target: self, action: #selector(autoUpdateChanged(_:)))
         stack.addArrangedSubview(indented(autoUpdateCheckbox))
-        stack.setCustomSpacing(4, after: stack.arrangedSubviews.last!)
-
-        betaUpdateCheckbox = NSButton(checkboxWithTitle: L("Check for beta updates"), target: self, action: #selector(betaUpdateChanged(_:)))
-        stack.addArrangedSubview(indented(betaUpdateCheckbox))
         stack.setCustomSpacing(20, after: stack.arrangedSubviews.last!)
+
+        // Kept for MacShot parity but not shown: PressShot has no beta channel.
+        betaUpdateCheckbox = NSButton(checkboxWithTitle: L("Check for beta updates"), target: self, action: #selector(betaUpdateChanged(_:)))
 
         // ── Appearance ───────────────────────────────────────
         stack.addArrangedSubview(sectionHeader(L("Appearance")))
@@ -2696,10 +2695,16 @@ class SettingsWindowController: NSWindowController, NSToolbarDelegate, NSWindowD
         recordingFilenameTemplateField.stringValue = UserDefaults.standard.string(forKey: FilenameFormatter.recordingUserDefaultsKey) ?? FilenameFormatter.defaultRecordingTemplate
         updateRecordingFilenamePreview()
 
-        autoUpdateCheckbox.state = .off
-        autoUpdateCheckbox.isEnabled = false
-        autoUpdateCheckbox.toolTip = "PressShot updates aren’t configured in this development build."
+        // Sparkle reads this key from user defaults first, then from Info.plist (on).
+        let updatesConfigured = AppDelegate.updatesConfigured
+        let checksAutomatically = UserDefaults.standard.object(forKey: "SUEnableAutomaticChecks") as? Bool ?? true
+        autoUpdateCheckbox.state = updatesConfigured && checksAutomatically ? .on : .off
+        autoUpdateCheckbox.isEnabled = updatesConfigured
+        autoUpdateCheckbox.toolTip = updatesConfigured
+            ? "PressShot checks once a day and asks before installing anything."
+            : "PressShot updates aren’t configured in this development build."
 
+        // PressShot has no beta channel.
         betaUpdateCheckbox.state = .off
         betaUpdateCheckbox.isEnabled = false
 

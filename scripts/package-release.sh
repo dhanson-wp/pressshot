@@ -3,9 +3,17 @@
 #
 #   scripts/package-release.sh /path/to/PressShot.app /path/to/output-folder
 #
-# Writes two files into the output folder (keep it outside this repository):
+# Writes three files into the output folder (keep it outside this repository):
 #   PressShot-<version>-<build>.zip   the app, archived with ditto so the signature survives
 #   latest.json                       the manifest install.sh reads
+#   appcast.xml                       the in-app update feed (Sparkle), signed with the
+#                                     "pressshot" update key in the login Keychain
+#
+# Optional environment:
+#   SPARKLE_BIN       folder holding Sparkle's sign_update and generate_keys
+#                     (default: found in Xcode's DerivedData)
+#   RELEASE_NOTES     an HTML file shown in the update window
+#   FEED_BASE         where the zip will be served (default: https://get-pressshot.space.fast)
 #
 # It does not build, sign, upload, or publish anything. Sign first; this script refuses an app whose signature does not verify
 # or whose signer is not one install.sh accepts.
@@ -65,4 +73,45 @@ cat > "$OUT/latest.json" <<EOF
 EOF
 [ "$(/usr/bin/plutil -extract zip.sha256 raw -o - -- "$OUT/latest.json" 2>/dev/null)" = "$SHA" ] || die "wrote an invalid latest.json."
 
-printf 'Packaged PressShot %s (build %s)\n  %s\n  %s\n' "$VERSION" "$BUILD" "$OUT/$ZIP_NAME" "$OUT/latest.json"
+# In-app updates. The app only accepts an update signed with the key whose public half
+# is in its Info.plist, so check the Keychain key matches before signing anything.
+FEED_BASE="${FEED_BASE:-https://get-pressshot.space.fast}"
+if [ -z "${SPARKLE_BIN:-}" ]; then
+    SPARKLE_BIN="$(ls -d "$HOME"/Library/Developer/Xcode/DerivedData/*/SourcePackages/artifacts/sparkle/Sparkle/bin 2>/dev/null | head -1)"
+fi
+[ -x "$SPARKLE_BIN/sign_update" ] && [ -x "$SPARKLE_BIN/generate_keys" ] || die "couldn't find Sparkle's sign_update. Set SPARKLE_BIN to Sparkle's bin folder."
+APP_KEY="$("$PLIST" -c 'Print :SUPublicEDKey' "$APP/Contents/Info.plist" 2>/dev/null || true)"
+FEED_URL="$("$PLIST" -c 'Print :SUFeedURL' "$APP/Contents/Info.plist" 2>/dev/null || true)"
+[ "$FEED_URL" = "$FEED_BASE/appcast.xml" ] || die "this build's update feed ($FEED_URL) isn't $FEED_BASE/appcast.xml."
+KEYCHAIN_KEY="$("$SPARKLE_BIN/generate_keys" --account pressshot -p 2>/dev/null || true)"
+[ -n "$APP_KEY" ] && [ "$APP_KEY" = "$KEYCHAIN_KEY" ] || die "the app's update key doesn't match the \"pressshot\" key in the Keychain."
+SIGNATURE="$("$SPARKLE_BIN/sign_update" --account pressshot "$OUT/$ZIP_NAME")" || die "couldn't sign the zip for updates."
+case "$SIGNATURE" in *'sparkle:edSignature="'*) ;; *) die "sign_update returned an unexpected result." ;; esac
+BUNDLE_VERSION="$("$PLIST" -c 'Print :CFBundleVersion' "$APP/Contents/Info.plist")"
+NOTES=""
+if [ -n "${RELEASE_NOTES:-}" ]; then
+    [ -f "$RELEASE_NOTES" ] || die "RELEASE_NOTES ($RELEASE_NOTES) isn't a file."
+    if grep -q ']]>' "$RELEASE_NOTES"; then die "RELEASE_NOTES can't contain ]]>."; fi
+    NOTES="      <description><![CDATA[$(cat "$RELEASE_NOTES")]]></description>"
+fi
+cat > "$OUT/appcast.xml" <<APPCAST
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
+  <channel>
+    <title>PressShot</title>
+    <link>$FEED_BASE/</link>
+    <item>
+      <title>PressShot $VERSION</title>
+      <pubDate>$(LC_ALL=C date -u '+%a, %d %b %Y %H:%M:%S +0000')</pubDate>
+      <sparkle:version>$BUNDLE_VERSION</sparkle:version>
+      <sparkle:shortVersionString>$VERSION</sparkle:shortVersionString>
+      <sparkle:minimumSystemVersion>$MIN_OS</sparkle:minimumSystemVersion>
+$NOTES
+      <enclosure url="$FEED_BASE/$ZIP_NAME" $SIGNATURE type="application/octet-stream" />
+    </item>
+  </channel>
+</rss>
+APPCAST
+/usr/bin/xmllint --noout "$OUT/appcast.xml" 2>/dev/null || die "wrote an invalid appcast.xml."
+
+printf 'Packaged PressShot %s (build %s)\n  %s\n  %s\n  %s\n' "$VERSION" "$BUILD" "$OUT/$ZIP_NAME" "$OUT/latest.json" "$OUT/appcast.xml"
