@@ -869,3 +869,16 @@
 
 /* PressShot automatic recording upload; English fallback where untranslated. */
 "Upload and copy link" = "Upload and copy link";
+
+/* AI notes: a written account of each recording for an AI assistant. */
+"AI Notes" = "AI-noter";
+"Write AI notes with each recording" = "Skriv AI-noter med hver optagelse";
+"Saves a transcript, key screenshots and what you clicked with each recording on this Mac, so an AI assistant can read it. Nothing is uploaded." = "Gemmer en transskription, vigtige skærmbilleder og det, du klikkede på, med hver optagelse på denne Mac, så en AI-assistent kan læse det. Intet uploades.";
+"Name clicked controls" = "Navngiv klikkede betjeningselementer";
+"Control names need Accessibility access…" = "Navne på betjeningselementer kræver adgang til Tilgængelighed…";
+"Typing activity needs Input Monitoring access…" = "Skriveaktivitet kræver adgang til Inputovervågning…";
+"Show Latest AI Notes" = "Vis seneste AI-noter";
+"Copy AI Notes Path" = "Kopiér sti til AI-noter";
+"Copy Claude Code Command" = "Kopiér Claude Code-kommando";
+"AI notes could not be written." = "AI-noterne kunne ikke skrives.";
+"No AI notes yet. Turn on AI Notes in the recording toolbar, then record." = "Ingen AI-noter endnu. Slå AI-noter til i optagelsesværktøjslinjen, og optag derefter.";

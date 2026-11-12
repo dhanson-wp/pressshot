@@ -7985,6 +7985,8 @@ class OverlayView: NSView {
             showKeystrokeModeMenu(anchorView: anchorView)
         case .webcam:
             showWebcamDeviceMenu(anchorView: anchorView)
+        case .aiNotes:
+            showAINotesMenu(anchorView: anchorView)
         default:
             break
         }
@@ -8470,6 +8472,8 @@ class OverlayView: NSView {
             toggleMicAudio()
         case .webcam:
             toggleWebcamOverlay()
+        case .aiNotes:
+            toggleAINotes()
         case .cancel:
             overlayDelegate?.overlayViewDidCancel()
         case .detach:

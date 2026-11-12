@@ -869,3 +869,16 @@
 
 /* PressShot automatic recording upload; English fallback where untranslated. */
 "Upload and copy link" = "Upload and copy link";
+
+/* AI notes: a written account of each recording for an AI assistant. */
+"AI Notes" = "Tekoälymuistiinpanot";
+"Write AI notes with each recording" = "Kirjoita tekoälymuistiinpanot jokaisen tallenteen yhteyteen";
+"Saves a transcript, key screenshots and what you clicked with each recording on this Mac, so an AI assistant can read it. Nothing is uploaded." = "Tallentaa jokaisen tallenteen yhteyteen tälle Macille litteroinnin, keskeiset näyttökuvat ja sen, mitä klikkasit, jotta tekoälyavustaja voi lukea ne. Mitään ei ladata verkkoon.";
+"Name clicked controls" = "Nimeä klikatut säätimet";
+"Control names need Accessibility access…" = "Säätimien nimet vaativat Käyttöapu-oikeuden…";
+"Typing activity needs Input Monitoring access…" = "Kirjoitustoiminta vaatii Syötteen valvonta -oikeuden…";
+"Show Latest AI Notes" = "Näytä uusimmat tekoälymuistiinpanot";
+"Copy AI Notes Path" = "Kopioi tekoälymuistiinpanojen polku";
+"Copy Claude Code Command" = "Kopioi Claude Code -komento";
+"AI notes could not be written." = "Tekoälymuistiinpanoja ei voitu kirjoittaa.";
+"No AI notes yet. Turn on AI Notes in the recording toolbar, then record." = "Tekoälymuistiinpanoja ei vielä ole. Ota Tekoälymuistiinpanot käyttöön tallennuksen työkalupalkissa ja tallenna sitten.";

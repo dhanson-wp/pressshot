@@ -869,3 +869,16 @@
 
 /* PressShot automatic recording upload; English fallback where untranslated. */
 "Upload and copy link" = "Tải lên và sao chép liên kết";
+
+/* AI notes: a written account of each recording for an AI assistant. */
+"AI Notes" = "Ghi chú AI";
+"Write AI notes with each recording" = "Viết ghi chú AI cho mỗi bản ghi";
+"Saves a transcript, key screenshots and what you clicked with each recording on this Mac, so an AI assistant can read it. Nothing is uploaded." = "Lưu bản chép lời, các ảnh chụp màn hình chính và những gì bạn đã bấm cùng với mỗi bản ghi trên máy Mac này, để trợ lý AI có thể đọc. Không có gì được tải lên.";
+"Name clicked controls" = "Đặt tên cho các điều khiển đã bấm";
+"Control names need Accessibility access…" = "Tên điều khiển cần quyền Trợ năng…";
+"Typing activity needs Input Monitoring access…" = "Hoạt động gõ phím cần quyền Giám sát đầu vào…";
+"Show Latest AI Notes" = "Hiện ghi chú AI mới nhất";
+"Copy AI Notes Path" = "Sao chép đường dẫn ghi chú AI";
+"Copy Claude Code Command" = "Sao chép lệnh Claude Code";
+"AI notes could not be written." = "Không thể viết ghi chú AI.";
+"No AI notes yet. Turn on AI Notes in the recording toolbar, then record." = "Chưa có ghi chú AI. Bật Ghi chú AI trong các tùy chọn ghi hình, rồi ghi.";

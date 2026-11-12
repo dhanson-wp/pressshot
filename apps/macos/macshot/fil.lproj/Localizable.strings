@@ -871,3 +871,16 @@
 
 /* PressShot automatic recording upload; English fallback where untranslated. */
 "Upload and copy link" = "Upload and copy link";
+
+/* AI notes: a written account of each recording for an AI assistant. */
+"AI Notes" = "Mga AI Note";
+"Write AI notes with each recording" = "Sumulat ng mga AI note sa bawat recording";
+"Saves a transcript, key screenshots and what you clicked with each recording on this Mac, so an AI assistant can read it. Nothing is uploaded." = "Nagse-save ng transcript, mahahalagang screenshot at kung ano ang na-click mo kasama ng bawat recording sa Mac na ito, para mabasa ito ng isang AI assistant. Walang ina-upload.";
+"Name clicked controls" = "Pangalanan ang mga na-click na control";
+"Control names need Accessibility access…" = "Kailangan ng Accessibility access ang mga pangalan ng control…";
+"Typing activity needs Input Monitoring access…" = "Kailangan ng Input Monitoring access ang aktibidad ng pag-type…";
+"Show Latest AI Notes" = "Ipakita ang Pinakabagong mga AI Note";
+"Copy AI Notes Path" = "Kopyahin ang Path ng mga AI Note";
+"Copy Claude Code Command" = "Kopyahin ang Command ng Claude Code";
+"AI notes could not be written." = "Hindi maisulat ang mga AI note.";
+"No AI notes yet. Turn on AI Notes in the recording toolbar, then record." = "Wala pang mga AI note. I-on ang Mga AI Note sa toolbar ng pag-record, pagkatapos ay mag-record.";

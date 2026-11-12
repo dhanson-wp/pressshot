@@ -869,3 +869,16 @@
 
 /* PressShot automatic recording upload; English fallback where untranslated. */
 "Upload and copy link" = "Upload and copy link";
+
+/* AI notes: a written account of each recording for an AI assistant. */
+"AI Notes" = "Poznámky pre AI";
+"Write AI notes with each recording" = "Písať poznámky pre AI ku každej nahrávke";
+"Saves a transcript, key screenshots and what you clicked with each recording on this Mac, so an AI assistant can read it. Nothing is uploaded." = "Ku každej nahrávke uloží na tomto Macu prepis, kľúčové snímky obrazovky a to, na čo ste klikli, aby si to mohol prečítať asistent AI. Nič sa nenahráva.";
+"Name clicked controls" = "Pomenovať ovládacie prvky, na ktoré sa kliklo";
+"Control names need Accessibility access…" = "Názvy ovládacích prvkov vyžadujú prístup k Prístupnosti…";
+"Typing activity needs Input Monitoring access…" = "Aktivita písania vyžaduje prístup k Monitorovaniu vstupu…";
+"Show Latest AI Notes" = "Zobraziť najnovšie poznámky pre AI";
+"Copy AI Notes Path" = "Kopírovať cestu k poznámkam pre AI";
+"Copy Claude Code Command" = "Kopírovať príkaz pre Claude Code";
+"AI notes could not be written." = "Poznámky pre AI sa nepodarilo zapísať.";
+"No AI notes yet. Turn on AI Notes in the recording toolbar, then record." = "Zatiaľ žiadne poznámky pre AI. Zapnite Poznámky pre AI na paneli nahrávania a potom nahrávajte.";

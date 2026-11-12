@@ -871,3 +871,16 @@
 
 /* PressShot automatic recording upload; English fallback where untranslated. */
 "Upload and copy link" = "Upload and copy link";
+
+/* AI notes: a written account of each recording for an AI assistant. */
+"AI Notes" = "AI 笔记";
+"Write AI notes with each recording" = "每次录制时写入 AI 笔记";
+"Saves a transcript, key screenshots and what you clicked with each recording on this Mac, so an AI assistant can read it. Nothing is uploaded." = "在这台 Mac 上随每次录制保存转写文本、关键截图和你点击的内容，供 AI 助手阅读。不会上传任何内容。";
+"Name clicked controls" = "为点击的控件命名";
+"Control names need Accessibility access…" = "控件名称需要辅助功能权限…";
+"Typing activity needs Input Monitoring access…" = "键入活动需要输入监控权限…";
+"Show Latest AI Notes" = "显示最新的 AI 笔记";
+"Copy AI Notes Path" = "拷贝 AI 笔记路径";
+"Copy Claude Code Command" = "拷贝 Claude Code 命令";
+"AI notes could not be written." = "无法写入 AI 笔记。";
+"No AI notes yet. Turn on AI Notes in the recording toolbar, then record." = "还没有 AI 笔记。请在录制工具栏中打开 AI 笔记，然后录制。";
