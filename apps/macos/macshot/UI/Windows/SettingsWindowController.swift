@@ -2982,6 +2982,7 @@ class SettingsWindowController: NSWindowController, NSToolbarDelegate, NSWindowD
     }
     @objc private func aiNotesChanged(_ sender: NSButton) {
         UserDefaults.standard.set(sender.state == .on, forKey: AINotesOptions.enabledKey)
+        if sender.state == .on { AINotesCoordinator.requestSpeechPermissionIfNeeded() }
     }
 
     @objc private func copyClaudeCodeCommand(_ sender: NSButton) {

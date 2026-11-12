@@ -1,3 +1,4 @@
+import Speech
 import AppKit
 
 /// Finishes AI notes after a take and gives the rest of the app one place to
@@ -13,13 +14,29 @@ final class AINotesCoordinator {
     private var gates: [UUID: AINotesNarrationGate] = [:]
     private var quitting = false
 
+    /// Asks for Speech Recognition access when the narration transcript depends on it and the
+    /// person has not been asked yet. On macOS 26 and later the transcript needs no permission.
+    /// Call when AI notes are being switched on, never after a recording stops.
+    static func requestSpeechPermissionIfNeeded(willAsk: @escaping @MainActor @Sendable () -> Void = {},
+                                                didAsk: @escaping @MainActor @Sendable () -> Void = {}) {
+        guard Bundle.main.object(forInfoDictionaryKey: "NSSpeechRecognitionUsageDescription") != nil,
+              SFSpeechRecognizer.authorizationStatus() == .notDetermined else { return }
+        Task { @MainActor in
+            if #available(macOS 26.0, *), await AINotesTranscriber.language() != nil { return }
+            willAsk()
+            SFSpeechRecognizer.requestAuthorization { _ in
+                Task { @MainActor in didAsk() }
+            }
+        }
+    }
+
     /// Called when a recording produced a file. `quitting` skips transcription so Quit is not kept waiting.
     func finish(_ capture: AINotesCapture, video: URL, quitting: Bool = false) {
         let gate = AINotesNarrationGate()
         if quitting || self.quitting { gate.skip() }
         let id = UUID()
         gates[id] = gate
-        MediaExportCoordinator.shared.start(title: "AI notes", status: "Preparing AI notes…", operation: { _, _ in
+        MediaExportCoordinator.shared.start(title: L("AI Notes"), status: L("Saving..."), operation: { _, _ in
             try await AINotesBuilder.build(capture, video: video, gate: gate)
         }, completion: { [weak self] result in
             self?.gates[id] = nil

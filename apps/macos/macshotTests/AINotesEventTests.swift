@@ -79,6 +79,42 @@ final class AINotesEventTests: XCTestCase {
         XCTAssertNil(AINotesFocusMonitor.frontmost(in: [window(10, "PressShot", "Editor")], ownPID: 10) { _ in nil })
     }
 
+    func testBrowserLedgerRemembersWhatARecordingSwitchedOn() throws {
+        let suite = TestDefaultsSuite.uniqueName("ai-notes-ledger")
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))
+        defer { TestDefaultsSuite.remove(defaults, named: suite) }
+        let ledger = AINotesBrowserLedger(defaults: defaults)
+        XCTAssertTrue(ledger.entries.isEmpty)
+
+        ledger.add(pid: 410, bundleID: "com.google.Chrome")
+        ledger.add(pid: 512, bundleID: "com.brave.Browser")
+        ledger.add(pid: 410, bundleID: "com.google.Chrome")
+        XCTAssertEqual(ledger.entries, [.init(pid: 512, bundleID: "com.brave.Browser"),
+                                        .init(pid: 410, bundleID: "com.google.Chrome")])
+        // A second ledger on the same defaults sees them: this is what survives a crash.
+        XCTAssertEqual(AINotesBrowserLedger(defaults: defaults).entries.count, 2)
+
+        ledger.remove(pid: 512)
+        XCTAssertEqual(ledger.entries, [.init(pid: 410, bundleID: "com.google.Chrome")])
+        ledger.remove(pid: 410)
+        XCTAssertNil(defaults.object(forKey: AINotesBrowserLedger.key))
+    }
+
+    func testOnlyBrowsersStillRunningAsTheSameAppAreRestored() {
+        let remembered: [AINotesBrowserLedger.Entry] = [
+            .init(pid: 410, bundleID: "com.google.Chrome"),
+            .init(pid: 512, bundleID: "com.brave.Browser"),
+            .init(pid: 613, bundleID: "com.microsoft.edgemac"),
+        ]
+        let running: [AINotesBrowserLedger.Entry] = [
+            .init(pid: 410, bundleID: "com.google.Chrome"),
+            // Brave quit and its process id went to another app.
+            .init(pid: 512, bundleID: "com.apple.Notes"),
+        ]
+        XCTAssertEqual(AINotesBrowserLedger.stillRunning(remembered, among: running),
+                       [.init(pid: 410, bundleID: "com.google.Chrome")])
+    }
+
     func testChromiumBrowsersAreRecognised() {
         XCTAssertTrue(AINotesElementInspector.isChromium("com.google.Chrome"))
         XCTAssertTrue(AINotesElementInspector.isChromium("com.microsoft.edgemac"))

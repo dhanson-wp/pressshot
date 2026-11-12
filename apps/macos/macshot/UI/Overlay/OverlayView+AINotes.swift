@@ -12,20 +12,16 @@ extension OverlayView {
         if enabled { requestSpeechRecognitionForAINotes() }
     }
 
-    /// Notes include a transcript of the narration, which needs Speech
-    /// Recognition access. Ask while the option is being switched on, never
-    /// after a recording stops; without access the notes say so instead.
+    /// Ask while the option is being switched on; without access the notes say why there is
+    /// no transcript instead.
     private func requestSpeechRecognitionForAINotes() {
-        guard Bundle.main.object(forInfoDictionaryKey: "NSSpeechRecognitionUsageDescription") != nil,
-              SFSpeechRecognizer.authorizationStatus() == .notDetermined else { return }
-        // Lower overlay so the system permission dialog is clickable
+        // Lower the overlay while the system permission dialog is up, so it is clickable.
         let savedLevel = window?.level
-        window?.level = .normal
-        SFSpeechRecognizer.requestAuthorization { [weak self] _ in
-            DispatchQueue.main.async {
-                if let saved = savedLevel { self?.window?.level = saved }
-            }
-        }
+        AINotesCoordinator.requestSpeechPermissionIfNeeded(willAsk: { [weak self] in
+            self?.window?.level = .normal
+        }, didAsk: { [weak self] in
+            if let savedLevel { self?.window?.level = savedLevel }
+        })
     }
 
     func showAINotesMenu(anchorView: NSView) {
