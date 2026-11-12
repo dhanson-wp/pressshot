@@ -46,7 +46,7 @@ You'll need macOS 12.3 or newer, on Apple silicon or Intel. There's a [download 
 ## Using it
 
 1. Allow Screen Recording when macOS asks, then quit and reopen PressShot.
-2. Open Settings, go to Upload destinations, add WordPress.com, approve in your browser, and pick your site.
+2. Open Settings, go to Upload destinations, click Connect a site, enter your site's address, and approve PressShot on the WordPress page.
 3. Click the PressShot icon in the menu bar and choose what to capture or record.
 
 When the upload finishes, paste the link wherever you need it.
