@@ -23,7 +23,9 @@ enum VideoCaptionTranscriber {
     /// chunk boundary only risks splitting one word.
     static let chunkDuration: Double = 50
 
-    static func transcribe(asset: AVAsset, lease: TemporaryMediaLease) async throws -> [CaptionTimeline.Word] {
+    /// `lease` keeps a temporary working copy alive for the length of the call. Pass nil for
+    /// media that must never be cleaned up, such as a take's original.
+    static func transcribe(asset: AVAsset, lease: TemporaryMediaLease?) async throws -> [CaptionTimeline.Word] {
         defer { withExtendedLifetime(lease) {} }
         guard try await authorize() else { throw TranscriptionError.notAuthorized }
         let recognizer = SFSpeechRecognizer(locale: Locale.current) ?? SFSpeechRecognizer()
