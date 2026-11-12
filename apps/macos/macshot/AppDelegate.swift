@@ -1410,7 +1410,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, SPUUpdaterDelegate {
     private func showPreCaptureCountdown(seconds: Int) {
         // No display to show a countdown on (all asleep, or headless).
         guard let screen = NSScreen.preferred else { return }
-        let size = NSSize(width: 140, height: 140)
+        let size = CountdownView.preferredSize
         let origin = NSPoint(
             x: screen.frame.midX - size.width / 2,
             y: screen.frame.midY - size.height / 2
@@ -1428,8 +1428,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, SPUUpdaterDelegate {
         window.hasShadow = false
         window.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
 
-        let countdownView = CountdownView(frame: NSRect(origin: .zero, size: size))
-        countdownView.remaining = seconds
+        let countdownView = CountdownView(seconds: seconds)
         window.contentView = countdownView
         NSApp.activate(ignoringOtherApps: true)
         window.makeKeyAndOrderFront(nil)
@@ -1457,8 +1456,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, SPUUpdaterDelegate {
                 self?.removeDelayEscMonitors()
                 self?.performCapture(fromMenu: false)
             } else {
-                countdownView.remaining = remaining
-                countdownView.needsDisplay = true
+                countdownView.tick(to: remaining)
             }
         }
     }
@@ -2946,7 +2944,7 @@ extension AppDelegate: OverlayWindowControllerDelegate {
     private func startRecordingCountdown(seconds: Int, rect: NSRect, screen: NSScreen,
                                           fpsOverride: Int?,
                                           onStopOverride: String?) {
-        let size = NSSize(width: 140, height: 140)
+        let size = CountdownView.preferredSize
         let origin = NSPoint(
             x: rect.midX - size.width / 2,
             y: rect.midY - size.height / 2
@@ -2965,8 +2963,7 @@ extension AppDelegate: OverlayWindowControllerDelegate {
         window.ignoresMouseEvents = true
         window.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
 
-        let countdownView = CountdownView(frame: NSRect(origin: .zero, size: size))
-        countdownView.remaining = seconds
+        let countdownView = CountdownView(seconds: seconds)
         window.contentView = countdownView
         window.makeKeyAndOrderFront(nil)
         delayCountdownWindow = window
@@ -3000,8 +2997,7 @@ extension AppDelegate: OverlayWindowControllerDelegate {
                                      fpsOverride: fpsOverride,
                                      onStopOverride: onStopOverride)
             } else {
-                countdownView.remaining = remaining
-                countdownView.needsDisplay = true
+                countdownView.tick(to: remaining)
             }
         }
     }
