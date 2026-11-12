@@ -871,3 +871,16 @@
 
 /* PressShot automatic recording upload; English fallback where untranslated. */
 "Upload and copy link" = "Upload and copy link";
+
+/* AI notes: a written account of each recording for an AI assistant. */
+"AI Notes" = "Σημειώσεις AI";
+"Write AI notes with each recording" = "Εγγραφή σημειώσεων AI με κάθε εγγραφή";
+"Saves a transcript, key screenshots and what you clicked with each recording on this Mac, so an AI assistant can read it. Nothing is uploaded." = "Αποθηκεύει μια απομαγνητοφώνηση, βασικά στιγμιότυπα οθόνης και όσα κάνατε κλικ με κάθε εγγραφή σε αυτό το Mac, ώστε να μπορεί να τα διαβάσει ένας βοηθός AI. Τίποτα δεν μεταφορτώνεται.";
+"Name clicked controls" = "Ονομασία των στοιχείων ελέγχου που πατήθηκαν";
+"Control names need Accessibility access…" = "Τα ονόματα των στοιχείων ελέγχου χρειάζονται πρόσβαση Προσβασιμότητας…";
+"Typing activity needs Input Monitoring access…" = "Η δραστηριότητα πληκτρολόγησης χρειάζεται πρόσβαση Παρακολούθησης εισόδου…";
+"Show Latest AI Notes" = "Εμφάνιση τελευταίων σημειώσεων AI";
+"Copy AI Notes Path" = "Αντιγραφή διαδρομής σημειώσεων AI";
+"Copy Claude Code Command" = "Αντιγραφή εντολής Claude Code";
+"AI notes could not be written." = "Δεν ήταν δυνατή η εγγραφή των σημειώσεων AI.";
+"No AI notes yet. Turn on AI Notes in the recording toolbar, then record." = "Δεν υπάρχουν ακόμη σημειώσεις AI. Ενεργοποιήστε τις Σημειώσεις AI στη γραμμή εργαλείων εγγραφής και μετά εγγράψτε.";

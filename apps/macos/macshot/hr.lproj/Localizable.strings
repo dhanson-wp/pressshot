@@ -869,3 +869,16 @@
 
 /* PressShot automatic recording upload; English fallback where untranslated. */
 "Upload and copy link" = "Upload and copy link";
+
+/* AI notes: a written account of each recording for an AI assistant. */
+"AI Notes" = "AI bilješke";
+"Write AI notes with each recording" = "Piši AI bilješke uz svaku snimku";
+"Saves a transcript, key screenshots and what you clicked with each recording on this Mac, so an AI assistant can read it. Nothing is uploaded." = "Uz svaku snimku na ovom Macu sprema transkript, ključne snimke zaslona i ono što ste kliknuli, kako bi ih AI asistent mogao pročitati. Ništa se ne prenosi.";
+"Name clicked controls" = "Imenuj kliknute kontrole";
+"Control names need Accessibility access…" = "Nazivi kontrola zahtijevaju pristup Pristupačnosti…";
+"Typing activity needs Input Monitoring access…" = "Aktivnost tipkanja zahtijeva pristup Nadzoru unosa…";
+"Show Latest AI Notes" = "Prikaži najnovije AI bilješke";
+"Copy AI Notes Path" = "Kopiraj putanju AI bilješki";
+"Copy Claude Code Command" = "Kopiraj naredbu za Claude Code";
+"AI notes could not be written." = "AI bilješke nije bilo moguće zapisati.";
+"No AI notes yet. Turn on AI Notes in the recording toolbar, then record." = "Još nema AI bilješki. Uključite AI bilješke na alatnoj traci snimanja, a zatim snimajte.";

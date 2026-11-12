@@ -63,6 +63,20 @@ macshot/
 │   ├── CameraPlacementTrack.swift     # Webcam bubble moves/resizes during a take, replayed by the editor
 │   └── VideoCaptionTranscriber.swift  # On-device speech → caption words
 │
+├── AINotes/                            # Written account of a recording for an AI assistant (llm.md)
+│   ├── AINotesModel.swift              # Events, frames, document (lenient decode), geometry, pause-aware clock
+│   ├── AINotesSession.swift            # One take's note-taking; owned by RecordingEngine like pointer telemetry
+│   ├── AINotesEventRecorder.swift      # Timeline: clicks, scroll bursts, typing spans, window changes
+│   ├── AINotesMonitors.swift           # Front-window poller, global mouse monitor, listen-only key tap
+│   ├── AINotesElementInspector.swift   # Clicked control's role/name/selector via Accessibility
+│   ├── AINotesFrames.swift             # Key-frame choice (luma grid), frame budget, JPEG encoding, click ring
+│   ├── AINotesBuilder.swift            # After the take: frame text, redaction, narration, assembly
+│   ├── AINotesRedactor.swift           # Secret patterns → [redacted]
+│   ├── AINotesReport.swift             # Pure: llm.md rendering, text diffing, cues, WebVTT
+│   ├── AINotesLibrary.swift            # Folder layout inside the take folder; list/read/write (Foundation only)
+│   ├── AINotesCoordinator.swift        # Runs builds as export jobs; reveal/copy path
+│   └── AINotesMCPServer.swift          # `PressShot --mcp`: stdio server over finished notes
+│
 ├── Services/
 │   ├── ImageEncoder.swift              # PNG/JPEG/HEIC/WebP encoding, clipboard copy, resolution scaling
 │   ├── BeautifyRenderer.swift          # Gradient frame / background beautification (linear + mesh gradients)
@@ -259,7 +273,7 @@ The video editor is built around `VideoEditorDocument` (one `VideoProject`: time
 - Selection: `lastSelectionRect`, `lastSelectionScreenFrame`, `rememberLastSelection`
 - Thumbnails: `showFloatingThumbnail`, `thumbnailStacking`, `thumbnailAutoDismissSeconds`
 - Image: `imageFormat` (png/jpeg/heic/webp/avif), `imageQuality` (0.0–1.0), `downscaleRetina` (bool), `clipboardIncludesImageFormat` (bool, opt-in: adds the configured format ahead of PNG/TIFF on the clipboard)
-- Recording: `recordingFormat` (mp4/gif), `recordingFPS`, `recordingOnStop`
+- Recording: `recordingFormat` (mp4/gif), `recordingFPS`, `recordingOnStop`, `recordAINotes` (off by default), `aiNotesControlNames`
 - History: `historySize`
 - Tools: `enabledTools`, `knownToolRawValues`
 - Features: `imgbbAPIKey`, `beautifyEnabled`, `beautifyStyleIndex`, `beautifyMode`, `beautifyPadding`, `beautifyCornerRadius`, `beautifyShadowRadius`, `pencilSmoothEnabled`, `loupeSize`, `stampSize`, `translateTargetLang`
@@ -335,6 +349,7 @@ Copy to clipboard, Save to file (PNG/JPEG/HEIC/WebP), Pin (floating always-on-to
 - **Filename components are sanitized one by one.** Both rendered templates and direct recording names use `FilenameSanitizer`. Template expansion is one pass: window titles containing `{date}` or `{random}` stay literal. Preserve complete Unicode characters while capping UTF-8 length, and sanitize again at the direct recording boundary. A `/` in an image filename template creates subfolders (`FilenameFormatter.formatRelativePath`): every component is sanitized separately, empty/`.`/`..` components are dropped so saves stay inside the save folder, and `ImageSaveService.createSubfolders` only creates folders below an existing save folder. Slashes inside token values (window titles, app names) never create folders.
 - **Report failures the user can't otherwise see.** A capture that fails to save or a recording that produces no file used to disappear silently (a `#if DEBUG` log at most). Anything that can lose a user's capture must surface: `ImageSaveService.onFailure` is wired to `AppDelegate.showFailureToast(_:)` at launch, and the recording completion handler reports its error the same way. Never swallow such a failure into an ignored `false` completion.
 - **Recording originals are durable.** `RecordingSessionStore` gives each take a unique Application Support folder. Do not delete or sweep these on editor close or failed export. `AtomicMediaSave` stages output on the destination volume and publishes it atomically; keep heavy copying off the main thread and preserve the old destination on failure.
+- **AI notes never cost a recording.** With the sparkles toggle on, `RecordingEngine` owns an `AINotesSession` the way it owns pointer telemetry: creation is `try?`, nothing in it throws into the engine, and a take that fails removes its `ai-notes/` folder. Notes live in the take folder (`Recordings/<UUID>/ai-notes/`: `llm.md`, `events.json`, `transcript.vtt`, `frames/`) and share its lifetime; `llm.md` is always rendered from `events.json`. Times come from `AINotesClock`, which removes pauses exactly like the writer and `CursorRecording` do (a test holds the two together). Keys are never recorded, only that typing happened and in which field; text-field values are never read. Permissions are checked silently when a take starts (Accessibility for control names, Input Monitoring for typing spans) and requested only from the toolbar menu, never mid-recording; narration is transcribed only when Speech Recognition is already authorized. Recognised text is redacted before it is stored and blacked out in the frame, with the click ring drawn after recognition so it cannot hide the label. Everything under `AINotes/` that runs off the main actor is explicitly `nonisolated`. `--mcp` is handled in `main.swift` before `NSApplication` exists and must stay Foundation-only.
 - **Sparse system audio must not starve the writer.** `RecordingAudioSilence` provides bounded PCM chunks only when an empty system queue holds up another writer input. Never allocate silence for an entire gap, synthesize microphone samples, or discard the final audio queue when an encoder temporarily refuses input. Finish readiness callbacks must keep draining queued real audio; persistent overload remains a visible failure.
 - **Exports outlive their windows.** Register media exports, audio mixes and recording copies with `MediaExportCoordinator`. Retain their input/directory leases until the worker actually completes, including cancellation. Gate atomic publication with `MediaExportCancellation.beginPublication` so a completed save cannot be reported as cancelled. `ApplicationTerminationCoordinator` keeps the normal event loop running while work drains, then retries Quit; `terminateLater` stalled MainActor completions in the native macOS 27 probe.
 - **Video sources stay stable.** Open through `VideoSourceSnapshot` and `PreparedVideoSource`; use the working `mediaURL` for reads and `originalURL` for names. A later save can replace the public file without changing the active timeline's input. Prepared assets and thumbnail callbacks retain the read lease. Clipboard URLs need their own published copy so closing the editor cannot remove their backing file. Only the snapshot service cleans temporary working folders, honoring live-reader locks; durable original backups are never part of that sweep.

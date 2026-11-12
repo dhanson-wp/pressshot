@@ -871,3 +871,16 @@
 
 /* PressShot automatic recording upload; English fallback where untranslated. */
 "Upload and copy link" = "Upload and copy link";
+
+/* AI notes: a written account of each recording for an AI assistant. */
+"AI Notes" = "Notas de IA";
+"Write AI notes with each recording" = "Escrever notas de IA com cada gravação";
+"Saves a transcript, key screenshots and what you clicked with each recording on this Mac, so an AI assistant can read it. Nothing is uploaded." = "Guarda uma transcrição, capturas de ecrã importantes e aquilo em que clicou com cada gravação neste Mac, para que um assistente de IA o possa ler. Nada é carregado.";
+"Name clicked controls" = "Dar nome aos controlos clicados";
+"Control names need Accessibility access…" = "Os nomes dos controlos precisam de acesso de Acessibilidade…";
+"Typing activity needs Input Monitoring access…" = "A atividade de escrita precisa de acesso de Monitorização de entrada…";
+"Show Latest AI Notes" = "Mostrar as últimas notas de IA";
+"Copy AI Notes Path" = "Copiar o caminho das notas de IA";
+"Copy Claude Code Command" = "Copiar o comando do Claude Code";
+"AI notes could not be written." = "Não foi possível escrever as notas de IA.";
+"No AI notes yet. Turn on AI Notes in the recording toolbar, then record." = "Ainda não há notas de IA. Ative Notas de IA na barra de ferramentas de gravação e depois grave.";

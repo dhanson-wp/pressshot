@@ -871,3 +871,16 @@
 
 /* PressShot automatic recording upload; English fallback where untranslated. */
 "Upload and copy link" = "Upload and copy link";
+
+/* AI notes: a written account of each recording for an AI assistant. */
+"AI Notes" = "Yapay Zeka Notları";
+"Write AI notes with each recording" = "Her kayıtla birlikte yapay zeka notları yaz";
+"Saves a transcript, key screenshots and what you clicked with each recording on this Mac, so an AI assistant can read it. Nothing is uploaded." = "Bu Mac'teki her kayıtla birlikte bir döküm, önemli ekran görüntüleri ve tıkladıklarınızı kaydeder; böylece bir yapay zeka asistanı bunları okuyabilir. Hiçbir şey yüklenmez.";
+"Name clicked controls" = "Tıklanan denetimleri adlandır";
+"Control names need Accessibility access…" = "Denetim adları için Erişilebilirlik erişimi gerekir…";
+"Typing activity needs Input Monitoring access…" = "Yazma etkinliği için Girdi İzleme erişimi gerekir…";
+"Show Latest AI Notes" = "En Son Yapay Zeka Notlarını Göster";
+"Copy AI Notes Path" = "Yapay Zeka Notlarının Yolunu Kopyala";
+"Copy Claude Code Command" = "Claude Code Komutunu Kopyala";
+"AI notes could not be written." = "Yapay zeka notları yazılamadı.";
+"No AI notes yet. Turn on AI Notes in the recording toolbar, then record." = "Henüz yapay zeka notu yok. Kayıt araç çubuğunda Yapay Zeka Notları'nı açın, sonra kaydedin.";

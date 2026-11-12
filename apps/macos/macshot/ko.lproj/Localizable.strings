@@ -871,3 +871,16 @@
 
 /* PressShot automatic recording upload; English fallback where untranslated. */
 "Upload and copy link" = "Upload and copy link";
+
+/* AI notes: a written account of each recording for an AI assistant. */
+"AI Notes" = "AI 노트";
+"Write AI notes with each recording" = "녹화할 때마다 AI 노트 작성";
+"Saves a transcript, key screenshots and what you clicked with each recording on this Mac, so an AI assistant can read it. Nothing is uploaded." = "이 Mac의 각 녹화와 함께 전사본, 주요 스크린샷, 클릭한 항목을 저장하여 AI 어시스턴트가 읽을 수 있게 합니다. 아무것도 업로드되지 않습니다.";
+"Name clicked controls" = "클릭한 컨트롤에 이름 붙이기";
+"Control names need Accessibility access…" = "컨트롤 이름에는 손쉬운 사용 접근 권한이 필요합니다…";
+"Typing activity needs Input Monitoring access…" = "입력 활동에는 입력 모니터링 접근 권한이 필요합니다…";
+"Show Latest AI Notes" = "최신 AI 노트 보기";
+"Copy AI Notes Path" = "AI 노트 경로 복사";
+"Copy Claude Code Command" = "Claude Code 명령 복사";
+"AI notes could not be written." = "AI 노트를 작성할 수 없습니다.";
+"No AI notes yet. Turn on AI Notes in the recording toolbar, then record." = "아직 AI 노트가 없습니다. 녹화 도구 막대에서 AI 노트를 켠 다음 녹화하세요.";
