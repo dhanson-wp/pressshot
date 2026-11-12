@@ -290,6 +290,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, SPUUpdaterDelegate {
         AINotesCoordinator.shared.onFailure = { [weak self] message in
             self?.showFailureToast(message)
         }
+        AINotesElementInspector.restoreAbandonedWebContent()
 
         // Disable App Nap. macshot is LSUIElement with no visible windows
         // when idle, so macOS can add wake-up latency to global hotkey
