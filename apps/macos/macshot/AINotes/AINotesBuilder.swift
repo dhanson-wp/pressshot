@@ -330,7 +330,14 @@ nonisolated enum AINotesBuilder {
         guard microphone else { return (Narration(status: "none", detail: "the microphone was off"), []) }
         let quit = "PressShot quit before the narration was transcribed"
         guard !gate.isSkipped else { return (Narration(status: "unavailable", detail: quit), []) }
-        guard SFSpeechRecognizer.authorizationStatus() == .authorized else {
+        var language = Locale.current
+        var modern = false
+        if #available(macOS 26.0, *), let supported = await AINotesTranscriber.language() {
+            language = supported
+            modern = true
+        }
+        // The older recogniser needs the Speech Recognition permission (and Dictation switched on).
+        guard modern || SFSpeechRecognizer.authorizationStatus() == .authorized else {
             return (Narration(status: "unavailable",
                               detail: "speech recognition is not allowed for PressShot in System Settings › Privacy & Security"), [])
         }
@@ -347,11 +354,16 @@ nonisolated enum AINotesBuilder {
                 return (Narration(status: "unavailable", detail: "the microphone track could not be read"), [])
             }
             try voice.insertTimeRange(range, of: track, at: range.start)
-            let task = Task { try await VideoCaptionTranscriber.transcribe(asset: composition, lease: nil) }
+            let task = Task { () throws -> [CaptionTimeline.Word] in
+                if #available(macOS 26.0, *), modern {
+                    return try await AINotesTranscriber.words(in: composition, language: language)
+                }
+                return try await VideoCaptionTranscriber.transcribe(asset: composition, lease: nil)
+            }
             gate.track(task)
             let words = try await task.value
             let cues = AINotesReport.cues(from: words.map { .init(text: $0.text, start: $0.start, end: $0.end) })
-            return (Narration(status: "transcribed", language: Locale.current.identifier,
+            return (Narration(status: "transcribed", language: language.identifier,
                               detail: cues.isEmpty ? "no speech was recognised" : nil), cues)
         } catch {
             if gate.isSkipped || error is CancellationError { return (Narration(status: "unavailable", detail: quit), []) }
