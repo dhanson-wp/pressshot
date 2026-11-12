@@ -1,5 +1,11 @@
 import Cocoa
 
+// `PressShot --mcp` serves AI notes to an assistant over stdio and exits when
+// its input closes. It must not start the app: no windows, no menu bar item.
+if CommandLine.arguments.contains(AINotesMCPServer.argument) {
+    AINotesMCPServer.run()
+}
+
 // Disable "AutomaticAppKit" layer content format introduced in Big Sur.
 // With automatic format, the window server's compositor applies ordered
 // dithering to draw()-based layer content during compositing, which alters
