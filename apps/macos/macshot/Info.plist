@@ -62,7 +62,13 @@
 	<key>NSSpeechRecognitionUsageDescription</key>
 	<string>PressShot transcribes your recordings on this Mac to create captions. Audio is not uploaded.</string>
 	<key>SUEnableAutomaticChecks</key>
-	<false/>
+	<true/>
+	<key>SUFeedURL</key>
+	<string>https://get-pressshot.space.fast/appcast.xml</string>
+	<key>SUPublicEDKey</key>
+	<string>Iu2XbbXEvOWXw/6Qgc7dAi6Sqy5ighdBPYV/4M5Dcps=</string>
+	<key>SUScheduledCheckInterval</key>
+	<integer>86400</integer>
 	<key>NSSupportsAutomaticTermination</key>
 	<false/>
 	<key>CFBundleDisplayName</key>

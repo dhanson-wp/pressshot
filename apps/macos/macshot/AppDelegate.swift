@@ -194,7 +194,7 @@ private final class CaptureTimingTrace: @unchecked Sendable {
 class AppDelegate: NSObject, NSApplicationDelegate, SPUUpdaterDelegate {
 
     private var statusItem: NSStatusItem!
-    private var updaterController: SPUStandardUpdaterController!
+    private var updaterController: SPUStandardUpdaterController?
     private var overlayControllers: [OverlayWindowController] = []
     private var settingsController: SettingsWindowController?
     private var onboardingController: PermissionOnboardingController?
@@ -320,7 +320,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, SPUUpdaterDelegate {
         // something references ScreenshotHistory.shared.
         _ = ScreenshotHistory.shared
 
-        // PressShot never starts MacShot's updater or uses its release keys.
+        // PressShot's own feed and key live in Info.plist. A build without them
+        // (a local development build, say) leaves the updater off.
+        if Self.updatesConfigured {
+            updaterController = SPUStandardUpdaterController(startingUpdater: true, updaterDelegate: self, userDriverDelegate: nil)
+        }
         setupMainMenu()
         setupStatusBar()
         DistributedNotificationCenter.default().addObserver(
@@ -919,7 +923,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, SPUUpdaterDelegate {
 
         let updateItem = NSMenuItem(title: L("Check for Updates..."), action: #selector(checkForUpdates), keyEquivalent: "")
         updateItem.target = self
-        updateItem.isEnabled = false
+        updateItem.isEnabled = updaterController != nil
         updateItem.image = NSImage(systemSymbolName: "arrow.triangle.2.circlepath", accessibilityDescription: nil)
         menu.addItem(updateItem)
 
@@ -2662,8 +2666,19 @@ class AppDelegate: NSObject, NSApplicationDelegate, SPUUpdaterDelegate {
 
     // MARK: - Quit
 
+    /// True when this build carries PressShot's update feed and signing key.
+    static var updatesConfigured: Bool {
+        let info = Bundle.main.infoDictionary ?? [:]
+        guard let text = info["SUFeedURL"] as? String, let feed = URL(string: text), let host = feed.host,
+              let key = info["SUPublicEDKey"] as? String, !key.isEmpty else { return false }
+        // Updates are signed, but the feed still needs HTTPS. Plain HTTP is only for a
+        // local test feed on this Mac.
+        return feed.scheme == "https" || (feed.scheme == "http" && ["127.0.0.1", "localhost"].contains(host))
+    }
+
     @objc private func checkForUpdates() {
         NSApp.activate(ignoringOtherApps: true)
+        if let updaterController { updaterController.checkForUpdates(nil); return }
         let alert = NSAlert()
         alert.messageText = "PressShot updates aren’t configured yet"
         alert.informativeText = "Update checks aren’t configured in this development build."
