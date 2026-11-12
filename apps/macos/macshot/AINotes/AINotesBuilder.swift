@@ -126,7 +126,10 @@ nonisolated final class AINotesFrameReader: @unchecked Sendable {
             while let next = takeNext() {
                 // A frame dropped by the budget is gone by now; skip it.
                 guard FileManager.default.fileExists(atPath: next.path) else { continue }
-                if let lines = await AINotesFrameText.recognize(imageAt: next, ignoringTop: ignoringTop) {
+                // An empty answer is not kept: early in a recording the recogniser can report no
+                // text for a frame that is full of it, so those frames are read again after the stop.
+                if let lines = await AINotesFrameText.recognize(imageAt: next, ignoringTop: ignoringTop),
+                   !lines.isEmpty {
                     keep(lines, for: next)
                 }
             }
