@@ -1081,7 +1081,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, SPUUpdaterDelegate {
     }
     private var pendingFullScreen: Bool = false
     private var pendingFullScreenRecord: Bool = false
-    private var pendingFullScreenRecordAutoStart: Bool = false
     private var pendingOCRMode: Bool = false
     private var pendingTranslateOverlayMode: Bool = false
     private var pendingTranslateOverlayLang: String?
@@ -1305,9 +1304,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, SPUUpdaterDelegate {
     private func beginRecordFullScreen(fromMenu: Bool) {
         guard canStartCapture else { return }
         pendingFullScreenRecord = true
-        if UserDefaults.standard.integer(forKey: "captureDelaySeconds") > 0 {
-            pendingFullScreenRecordAutoStart = true
-        }
         startCapture(fromMenu: fromMenu)
     }
 
@@ -1398,7 +1394,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, SPUUpdaterDelegate {
         let delay = UserDefaults.standard.integer(forKey: "captureDelaySeconds")
         trace?.mark("capture delay read delay=\(delay)")
 
-        if delay > 0 {
+        // A recording counts down after "Start Recording" is clicked
+        // (overlayDidRequestStartRecording), once the area and options are
+        // chosen, so it skips the countdown that precedes a screenshot.
+        let isRecordingCapture = pendingRecordMode || pendingFullScreenRecord
+        if delay > 0 && !isRecordingCapture {
             captureTimingTrace?.mark("showPreCaptureCountdown requested")
             showPreCaptureCountdown(seconds: delay)
             return
@@ -1477,7 +1477,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, SPUUpdaterDelegate {
         pendingRecordMode = false
         pendingFullScreen = false
         pendingFullScreenRecord = false
-        pendingFullScreenRecordAutoStart = false
         pendingOCRMode = false
         pendingTranslateOverlayMode = false
         pendingTranslateOverlayLang = nil
@@ -1536,9 +1535,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, SPUUpdaterDelegate {
 
         pendingRecordMode = false
         let didApplyFullScreenRecord = pendingFullScreenRecord
-        let didApplyFullScreenRecordAutoStart = pendingFullScreenRecordAutoStart
         let didApplyFullScreen = pendingFullScreen
-        pendingFullScreenRecordAutoStart = false
         pendingOCRMode = false
         pendingTranslateOverlayMode = false
         pendingTranslateOverlayLang = nil
@@ -1585,7 +1582,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, SPUUpdaterDelegate {
                             mouseScreen: mouseScreen,
                             applyFullScreen: didApplyFullScreen,
                             applyFullScreenRecord: didApplyFullScreenRecord,
-                            autoStartRecord: didApplyFullScreenRecordAutoStart,
                             markInteractive: isFirst)
                         // Showing a later display makes it key; keep the keyboard
                         // on the display the user is working on.
@@ -1613,7 +1609,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, SPUUpdaterDelegate {
                         mouseScreen: mouseScreen,
                         applyFullScreen: didApplyFullScreen,
                         applyFullScreenRecord: didApplyFullScreenRecord,
-                        autoStartRecord: didApplyFullScreenRecordAutoStart,
                         markInteractive: false)
                     self.refocusOverlay(among: controllers, installed: nil)
                     return
@@ -1623,8 +1618,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, SPUUpdaterDelegate {
                     controllers: controllers,
                     mouseScreen: mouseScreen,
                     applyFullScreen: didApplyFullScreen,
-                    applyFullScreenRecord: didApplyFullScreenRecord,
-                    autoStartRecord: didApplyFullScreenRecordAutoStart)
+                    applyFullScreenRecord: didApplyFullScreenRecord)
             }
         }
     }
@@ -1649,7 +1643,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, SPUUpdaterDelegate {
         mouseScreen: NSScreen?,
         applyFullScreen: Bool,
         applyFullScreenRecord: Bool,
-        autoStartRecord: Bool,
         markInteractive: Bool = true
     ) {
         if captures.isEmpty {
@@ -1684,9 +1677,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, SPUUpdaterDelegate {
             }
             if applyFullScreenRecord && isMouseScreen {
                 controller.enterRecordingMode()
-                if autoStartRecord {
-                    controller.autoStartRecording()
-                }
             }
         }
 

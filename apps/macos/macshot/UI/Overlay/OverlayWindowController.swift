@@ -392,12 +392,6 @@ class OverlayWindowController {
         overlayView?.needsDisplay = true
     }
 
-    /// Auto-start recording immediately (used when timer + fullscreen record).
-    func autoStartRecording() {
-        overlayView?.overlayDelegate?.overlayViewDidRequestStartRecording(
-            rect: overlayView?.selectionRect ?? .zero)
-    }
-
     func setScrollCaptureState(isActive: Bool, stripCount: Int = 0, pixelSize: CGSize = .zero,
                                maxHeight: Int = 0) {
         overlayView?.scrollCaptureMaxHeight = maxHeight
