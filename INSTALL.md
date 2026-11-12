@@ -19,7 +19,7 @@ PressShot isn't notarized by Apple yet. Installing from Terminal avoids the "can
 No script or agent can do these for you; macOS and WordPress.com ask you directly.
 
 1. **Allow Screen Recording.** macOS asks the first time you capture. Allow it under System Settings > Privacy & Security > Screen & System Audio Recording, then quit and reopen PressShot.
-2. **Connect your WordPress.com site.** Open PressShot Settings > Upload destinations, choose Add destination > WordPress.com, approve in the browser, pick your site, and Save. Make it the primary destination if you want quick captures to go there.
+2. **Connect your WordPress site.** Open PressShot Settings > Upload destinations, click Connect a site, enter your site's address, click Yes, I approve of this connection on the WordPress page, and Save. WordPress makes the application password for PressShot, so there's nothing to copy or paste. Your first site becomes the primary destination.
 3. **Allow Keychain access.** On the first upload after each update, macOS asks for your Mac password so PressShot can read your saved sign-in. Enter it and choose Always Allow. This repeats after updates until PressShot is signed with an Apple Developer ID.
 
 ## For agents

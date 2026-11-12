@@ -17,7 +17,7 @@ Add `--check` to see whether an update exists without changing anything. Add `--
 After `installed` or `upgraded`, relay every item in `needs_human`. Don't click through them, and never ask for or type their Mac password.
 
 1. Allow Screen Recording when macOS asks, then quit and reopen PressShot.
-2. In PressShot Settings > Upload destinations, add WordPress.com, approve in the browser, pick a site, and Save. `open pressshot://settings` opens Settings.
+2. In PressShot Settings > Upload destinations, click Connect a site, enter your site's address, click Yes, I approve of this connection on the WordPress page, and Save. `open pressshot://settings` opens Settings.
 3. On the first upload after each update, enter the Mac password in the Keychain prompt and choose Always Allow.
 
 ## More

@@ -58,7 +58,7 @@ main() {
         done
         return 1
     }
-    HUMAN_STEPS='["Allow Screen Recording when macOS asks (System Settings > Privacy & Security > Screen & System Audio Recording), then quit and reopen PressShot.","Open PressShot Settings > Upload destinations, choose Add destination > WordPress.com, approve in the browser, pick a site, and Save.","On the first upload after each update, enter the Mac password in the Keychain prompt and choose Always Allow."]'
+    HUMAN_STEPS='["Allow Screen Recording when macOS asks (System Settings > Privacy & Security > Screen & System Audio Recording), then quit and reopen PressShot.","Open PressShot Settings > Upload destinations, click Connect a site, enter your site address, click Yes, I approve of this connection on the WordPress page, and Save.","On the first upload after each update, enter the Mac password in the Keychain prompt and choose Always Allow."]'
 
     while [ $# -gt 0 ]; do
         case "$1" in
@@ -175,7 +175,7 @@ main() {
     say "$MSG"
     say "Next, three things only you can do:"
     say "  1. Allow Screen Recording when macOS asks, then quit and reopen PressShot."
-    say "  2. In PressShot Settings > Upload destinations, add WordPress.com, approve in the browser, pick a site, and Save."
+    say "  2. In PressShot Settings > Upload destinations, click Connect a site, enter your site address, click Yes, I approve of this connection on the WordPress page, and Save."
     say "  3. On the first upload after each update, enter your Mac password in the Keychain prompt and choose Always Allow."
     result "$MSG" "$HUMAN_STEPS"
 }
