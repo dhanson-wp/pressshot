@@ -88,7 +88,7 @@ final class WPComDestinationsStore {
                 try data.write(to: file, options: .atomic)
                 try FileManager.default.setAttributes([.posixPermissions: 0o600], ofItemAtPath: file.path)
                 let result = try await client.uploadImage(file: file, siteID: destination.siteID, token: token)
-                completion(.success(result.link.absoluteString))
+                completion(.success(.init(link: result.link.absoluteString)))
             } catch { completion(.failure(error)) }
         }
     }

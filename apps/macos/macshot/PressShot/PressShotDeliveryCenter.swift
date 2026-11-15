@@ -12,6 +12,8 @@ final class PressShotDeliveryCenter {
         var destinationIDs: [String]
         var statuses: [String: Status]
         var links: [String: String]
+        /// Status notes a destination sent with its link, such as "not added to the Library".
+        var notes: [String: String]
         var message: String
         var historyEntryID: String?
         let fileExtension: String
@@ -21,9 +23,9 @@ final class PressShotDeliveryCenter {
             self.fileExtension = fileExtension
             destinationIDs = selection.selectedIDs.sorted()
             statuses = Dictionary(uniqueKeysWithValues: destinationIDs.map { ($0, .saved) })
-            links = [:]; message = "Saving on this Mac…"
+            links = [:]; notes = [:]; message = "Saving on this Mac…"
         }
-        enum CodingKeys: String, CodingKey { case id, createdAt, primaryID, destinationIDs, statuses, links, message, historyEntryID, fileExtension }
+        enum CodingKeys: String, CodingKey { case id, createdAt, primaryID, destinationIDs, statuses, links, notes, message, historyEntryID, fileExtension }
         init(from decoder: Decoder) throws {
             let c = try decoder.container(keyedBy: CodingKeys.self)
             id = try c.decode(String.self, forKey: .id)
@@ -35,13 +37,23 @@ final class PressShotDeliveryCenter {
             destinationIDs = (try? c.decode([String].self, forKey: .destinationIDs)) ?? []
             statuses = (try? c.decode([String: Status].self, forKey: .statuses)) ?? [:]
             links = (try? c.decode([String: String].self, forKey: .links)) ?? [:]
+            notes = (try? c.decode([String: String].self, forKey: .notes)) ?? [:]
             historyEntryID = try? c.decode(String.self, forKey: .historyEntryID)
             message = (try? c.decode(String.self, forKey: .message)) ?? "Saved on this Mac"
         }
         var primaryLink: String? { primaryID.flatMap { links[$0] } }
+        /// The primary destination's status note, such as "not added to the Library", for toasts.
+        var primaryNote: String? { primaryID.flatMap { notes[$0] } }
         var isUploading: Bool { statuses.values.contains(.uploading) }
     }
-    typealias Completion = @MainActor (Result<String, Error>) -> Void
+    /// A finished upload: the link to copy, and an optional status note to show instead of the usual one.
+    struct Delivered: Equatable, ExpressibleByStringLiteral {
+        let link: String
+        var note: String?
+        init(link: String, note: String? = nil) { self.link = link; self.note = note }
+        init(stringLiteral value: String) { self.init(link: value) }
+    }
+    typealias Completion = @MainActor (Result<Delivered, Error>) -> Void
     typealias Transport = (String, NSImage, @escaping Completion) -> Void
     typealias RecordingTransport = (String, URL, @escaping Completion) -> Void
     static let shared = PressShotDeliveryCenter()
@@ -193,23 +205,26 @@ final class PressShotDeliveryCenter {
         retry(id)
     }
 
-    func finish(_ id: String, destination: String, result: Result<String, Error>) {
+    func finish(_ id: String, destination: String, result: Result<Delivered, Error>) {
         guard let previous = record(id), previous.statuses[destination] == .uploading else { return }
         var validResult = result
-        if case .success(let link) = result {
+        if case .success(let delivered) = result {
+            let link = delivered.link
             guard let url = URL(string: link), ["http", "https"].contains(url.scheme ?? ""), url.host != nil else {
                 finish(id, destination: destination, result: .failure(URLError(.badServerResponse))); return
             }
             if previous.primaryID == destination, previous.links[destination] == nil { copyLink(link) }
-            validResult = .success(link)
+            validResult = .success(delivered)
         }
         update(id) { value in
             switch validResult {
-            case .success(let link): value.statuses[destination] = .uploaded; value.links[destination] = link
+            case .success(let delivered):
+                value.statuses[destination] = .uploaded; value.links[destination] = delivered.link
+                value.notes[destination] = delivered.note
             case .failure: value.statuses[destination] = .failed
             }
             if value.primaryLink != nil {
-                value.message = value.statuses.values.contains(.failed) ? "Primary link copied · another destination failed. Retry is available." : value.isUploading ? "Primary link copied · other uploads continuing…" : "Link copied · local copy kept"
+                value.message = value.statuses.values.contains(.failed) ? "Primary link copied · another destination failed. Retry is available." : value.isUploading ? "Primary link copied · other uploads continuing…" : value.primaryNote ?? "Link copied · local copy kept"
             } else {
                 value.message = value.isUploading ? "Uploading… · waiting for the primary destination" : "Primary upload failed · local copy kept. Retry or reconnect in Settings."
                 #if !OFFLINE
@@ -260,11 +275,11 @@ final class PressShotDeliveryCenter {
         }
         switch provider {
         case "gdrive" where GoogleDriveUploader.shared.isSignedIn:
-            GoogleDriveUploader.shared.uploadImage(image, completion: completion)
+            GoogleDriveUploader.shared.uploadImage(image) { completion($0.map { Delivered(link: $0) }) }
         case "s3" where S3Uploader.shared.isConfigured:
-            S3Uploader.shared.uploadImage(image, completion: completion)
+            S3Uploader.shared.uploadImage(image) { completion($0.map { Delivered(link: $0) }) }
         case "imgbb" where UserDefaults.standard.string(forKey: "uploadProvider") == "imgbb":
-            ImageUploader.upload(image: image) { result in completion(result.map { $0.link }) }
+            ImageUploader.upload(image: image) { result in completion(result.map { Delivered(link: $0.link) }) }
         default: completion(.failure(URLError(.userAuthenticationRequired)))
         }
         #else
@@ -276,7 +291,7 @@ final class PressShotDeliveryCenter {
         #if !OFFLINE
         if provider.hasPrefix("wpcom:") {
             Task {
-                do { completion(.success(try await WPComDestinationsStore.shared.uploadRecording(provider: provider, file: file))) }
+                do { completion(.success(Delivered(link: try await WPComDestinationsStore.shared.uploadRecording(provider: provider, file: file)))) }
                 catch { completion(.failure(error)) }
             }
         } else if provider.hasPrefix("wordpress:") {
@@ -285,9 +300,9 @@ final class PressShotDeliveryCenter {
                 catch { completion(.failure(error)) }
             }
         } else if provider == "s3", S3Uploader.shared.isConfigured {
-            S3Uploader.shared.uploadVideo(url: file, completion: completion)
+            S3Uploader.shared.uploadVideo(url: file) { completion($0.map { Delivered(link: $0) }) }
         } else if provider == "gdrive", GoogleDriveUploader.shared.isSignedIn {
-            GoogleDriveUploader.shared.uploadVideo(url: file, completion: completion)
+            GoogleDriveUploader.shared.uploadVideo(url: file) { completion($0.map { Delivered(link: $0) }) }
         } else { completion(.failure(URLError(.unsupportedURL))) }
         #else
         completion(.failure(URLError(.notConnectedToInternet)))

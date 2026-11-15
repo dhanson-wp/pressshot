@@ -634,7 +634,7 @@ jobs:
 
             url "https://github.com/sw33tLie/macshot/releases/download/v#{version}/MacShot.dmg"
             name "macshot"
-            desc "Native screenshot tool inspired by Flameshot"
+            desc "Native screenshot and annotation tool"
             homepage "https://github.com/sw33tLie/macshot"
 
             livecheck do

@@ -2289,10 +2289,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, SPUUpdaterDelegate {
         if provider.hasPrefix("wpcom:") || provider.hasPrefix("wordpress:") {
             let finish: PressShotDeliveryCenter.Completion = { result in
                 switch result {
-                case .success(let link):
+                case .success(let delivered):
                     NSPasteboard.general.clearContents()
-                    NSPasteboard.general.setString(link, forType: .string)
-                    toast.showSuccess(link: link, deleteURL: "")
+                    NSPasteboard.general.setString(delivered.link, forType: .string)
+                    toast.showSuccess(link: delivered.link, deleteURL: "")
+                    if let note = delivered.note { toast.showSuccessNote(note) }
                 case .failure(let error): toast.showError(message: error.localizedDescription)
                 }
             }
@@ -3308,7 +3309,9 @@ extension AppDelegate: OverlayWindowControllerDelegate {
             guard phase != entry.phase else { continue }
             recordingUploadToasts[id]?.phase = phase
             switch phase {
-            case "success": entry.controller.showSuccess(link: record.primaryLink!, deleteURL: "")
+            case "success":
+                entry.controller.showSuccess(link: record.primaryLink!, deleteURL: "")
+                if let note = record.primaryNote { entry.controller.showSuccessNote(note) }
             case "uploading":
                 let title = record.primaryID.flatMap { id in PressShotDestinations.available.first { $0.id == id }?.title } ?? "primary destination"
                 entry.controller.updateStatus("Uploading to " + title + "…")

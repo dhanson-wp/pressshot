@@ -181,7 +181,7 @@ class SettingsWindowController: NSWindowController, NSToolbarDelegate, NSWindowD
     private func setupUI() {
         guard let window = window, let cv = window.contentView else { return }
 
-        // Toolbar (preference style — icon + label, Shottr-like)
+        // Toolbar (preference style — icon + label)
         let toolbar = NSToolbar(identifier: "SettingsToolbar")
         toolbar.delegate = self
         toolbar.displayMode = .iconAndLabel

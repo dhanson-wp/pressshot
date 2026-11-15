@@ -143,6 +143,7 @@ class HotkeyManager {
     /// Register all hotkeys with their callbacks.
     func registerAll(captureArea: @escaping () -> Void, captureFullScreen: @escaping () -> Void, recordArea: @escaping () -> Void, recordScreen: @escaping () -> Void, historyOverlay: @escaping () -> Void, captureOCR: @escaping () -> Void, quickCapture: @escaping () -> Void, scrollCapture: @escaping () -> Void, openFromClipboard: @escaping () -> Void, captureLastArea: @escaping () -> Void, pinFromClipboard: @escaping () -> Void, clearHistory: @escaping () -> Void, recordGIF: @escaping () -> Void) {
         unregisterAll()
+        Self.saveDefaultsForUnsetSlots()
         Self.resolveDuplicateHotkeys()
         register(slot: .captureArea, callback: captureArea)
         register(slot: .captureFullScreen, callback: captureFullScreen)
@@ -276,6 +277,26 @@ class HotkeyManager {
             let bound = readHotkey(for: slot)
             guard bound.modifiers != 0 || isFunctionKey(bound.keyCode) else { continue }
             if !taken.insert([bound.keyCode, bound.modifiers]).inserted {
+                disableHotkey(for: slot)
+            }
+        }
+    }
+
+    /// Write the shortcut each untouched slot gets from its default into settings,
+    /// or mark it as having none. Settings that hold no shortcut follow whatever
+    /// defaults a build carries, so a build with different defaults would change
+    /// them without a word. Once saved, only the person can change them. A slot
+    /// that's already set or cleared is left alone.
+    static func saveDefaultsForUnsetSlots() {
+        let defaults = UserDefaults.standard
+        for slot in HotkeySlot.allCases {
+            guard !defaults.bool(forKey: slot.disabledKey) else { continue }
+            let storedKey = defaults.integer(forKey: slot.keyCodeKey)
+            let storedMods = defaults.integer(forKey: slot.modifiersKey)
+            guard storedKey == 0 && storedMods == 0 else { continue }
+            if slot.defaultModifiers != 0 || isFunctionKey(slot.defaultKeyCode) {
+                saveHotkey(for: slot, keyCode: slot.defaultKeyCode, modifiers: slot.defaultModifiers)
+            } else {
                 disableHotkey(for: slot)
             }
         }

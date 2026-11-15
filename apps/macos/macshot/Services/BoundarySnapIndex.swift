@@ -2,7 +2,7 @@ import Cocoa
 
 /// Image-edge index for "boundary snap" — snapping the capture selection's
 /// dragged edges to strong color boundaries (UI lines, window borders, table
-/// rows, etc.) in the captured screenshot, like CleanShot X + PixelSnap.
+/// rows, etc.) in the captured screenshot.
 ///
 /// Built ONCE per screenshot (off the main thread). During a resize drag the
 /// lookup is a cheap scan over a small ±radius window, scored only across the

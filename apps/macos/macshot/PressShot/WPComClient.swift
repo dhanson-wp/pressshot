@@ -1,5 +1,4 @@
 #if !OFFLINE
-import CryptoKit
 import Foundation
 
 // WordPress.com account/media transport. No cookies, redirects, or response bodies in errors.
@@ -58,37 +57,6 @@ struct WPComIdentity: Decodable {
     let ID: Int
     let username: String
     let display_name: String
-}
-
-/// Short Library links for screenshots, in place of the long WordPress file address.
-/// The app knows no Library of its own. A connected site says which Library it belongs to in the
-/// response to an upload ("pressshot_library", set on the site by the PressShot plugin). A site that
-/// says nothing keeps getting the WordPress file address.
-enum PressShotLibraryLink {
-    /// Accepts only a plain https address with a host and nothing else (no sign-in, port, path, or query).
-    static func library(_ value: Any?) -> URL? {
-        guard let raw = value as? String, raw.count <= 255, let parts = URLComponents(string: raw),
-              parts.scheme == "https", let host = parts.host, !host.isEmpty, parts.user == nil, parts.password == nil,
-              parts.port == nil, parts.path.isEmpty || parts.path == "/", parts.query == nil, parts.fragment == nil,
-              host.range(of: "^[a-z0-9]([a-z0-9.-]{0,251}[a-z0-9])?$", options: [.regularExpression, .caseInsensitive]) != nil
-        else { return nil }
-        return URL(string: "https://" + host.lowercased())
-    }
-    /// Eight letters and digits from the uploaded file's name. Must stay identical to the Library's
-    /// own share-code function, or copied links won't open the shot.
-    static func code(fileName: String) -> String {
-        let letters = Array("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz")
-        return String(SHA256.hash(data: Data(("pressshot-link:" + fileName).utf8)).prefix(8).map { letters[Int($0) % 62] })
-    }
-    /// `reported` is the raw value the site sent with the upload, or nil.
-    static func screenshot(source: URL, reported: Any?) -> URL? {
-        let name = source.lastPathComponent
-        guard let base = library(reported), !name.isEmpty, name != "/" else { return nil }
-        var parts = URLComponents()
-        parts.scheme = "https"; parts.host = base.host; parts.path = "/"
-        parts.fragment = "i/" + code(fileName: name)
-        return parts.url
-    }
 }
 
 struct WPComUploadResult: Equatable {
@@ -193,7 +161,7 @@ final class WPComClient {
         let json = try object(data)
         guard let id = json["id"] as? Int, id > 0, let raw = json["source_url"] as? String else { throw WPComError.invalidResponse }
         let url = try Self.mediaURL(raw)
-        return .init(mediaID: id, sourceURL: url, videoPressGUID: nil, link: PressShotLibraryLink.screenshot(source: url, reported: json["pressshot_library"]) ?? url)
+        return .init(mediaID: id, sourceURL: url, videoPressGUID: nil, link: url)
     }
     struct VideoTicket { let endpoint: URL; let token: String }
     func videoTicket(siteID: Int, token: String) async throws -> VideoTicket {

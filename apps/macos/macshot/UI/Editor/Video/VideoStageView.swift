@@ -93,7 +93,7 @@ final class VideoStageView: NSView {
     }
 
     /// Playback always shows the final result; editing aids appear only while
-    /// paused (the convention in Screen Studio, Final Cut and CapCut).
+    /// paused (the usual convention in video editors).
     var isPlaying = false {
         didSet {
             guard isPlaying != oldValue else { return }

@@ -49,6 +49,27 @@ final class PressShotDeliveryTests: XCTestCase {
         center.retry(id)
         XCTAssertEqual(requested.count, 3)
     }
+    func testPrimaryNoteBecomesStatusAfterLinkIsCopied() async throws {
+        var pending: [String: PressShotDeliveryCenter.Completion] = [:], copied: [String] = []
+        let center = PressShotDeliveryCenter(directory: directory, transport: { provider, _, done in pending[provider] = done }, copyLink: { copied.append($0) })
+        let id = try XCTUnwrap(center.submit(image: image(), selection: .init(primaryID: "primary")))
+        await MediaExportCoordinator.shared.waitUntilIdle()
+        pending["primary"]?(.success(.init(link: "https://primary.example/capture.png", note: "File link copied · not added to the Library")))
+        XCTAssertEqual(copied, ["https://primary.example/capture.png"])
+        XCTAssertEqual(center.record(id)?.statuses["primary"], .uploaded)
+        XCTAssertEqual(center.record(id)?.message, "File link copied · not added to the Library")
+        XCTAssertEqual(center.record(id)?.primaryNote, "File link copied · not added to the Library")
+    }
+    func testSecondaryNoteDoesNotReplacePrimaryStatus() async throws {
+        var pending: [String: PressShotDeliveryCenter.Completion] = [:]
+        let center = PressShotDeliveryCenter(directory: directory, transport: { provider, _, done in pending[provider] = done }, copyLink: { _ in })
+        let id = try XCTUnwrap(center.submit(image: image(), selection: .init(primaryID: "primary", additionalIDs: ["secondary"])))
+        await MediaExportCoordinator.shared.waitUntilIdle()
+        pending["primary"]?(.success("https://primary.example/capture"))
+        pending["secondary"]?(.success(.init(link: "https://secondary.example/capture.png", note: "File link copied · not added to the Library")))
+        XCTAssertEqual(center.record(id)?.message, "Link copied · local copy kept")
+        XCTAssertNil(center.record(id)?.primaryNote)
+    }
     func testPrimaryCopiesBeforeSecondaryCompletesAndAdditionalUploadKeepsLink() async throws {
         var pending: [String: PressShotDeliveryCenter.Completion] = [:], copied: [String] = []
         let center = PressShotDeliveryCenter(directory: directory, transport: { provider, _, done in pending[provider] = done }, copyLink: { copied.append($0) })

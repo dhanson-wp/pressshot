@@ -118,6 +118,22 @@ struct WordPressApproval {
     }
 }
 
+/// The uploaded attachment and its direct file address.
+struct WordPressUpload: Equatable {
+    let id: Int
+    let fileURL: URL
+}
+
+/// What registering an upload with the PressShot plugin produced (the plugin documents this as its shot marker).
+enum WordPressRegistration: Equatable {
+    /// The shot is in the Library; this is its anyone-with-link page on the same site.
+    case shared(URL)
+    /// The site has no PressShot plugin. Keep the file link quietly.
+    case noPlugin
+    /// The plugin is there but didn't register the shot. Keep the file link and say so.
+    case failed
+}
+
 /// No cookies, shared cache, credential persistence, or automatic redirects.
 private final class WordPressRedirectPolicy: NSObject, URLSessionTaskDelegate, @unchecked Sendable {
     nonisolated func urlSession(_ session: URLSession, task: URLSessionTask, willPerformHTTPRedirection response: HTTPURLResponse,
@@ -125,6 +141,9 @@ private final class WordPressRedirectPolicy: NSObject, URLSessionTaskDelegate, @
 }
 
 final class WordPressClient {
+    /// Registering runs after the upload already succeeded, so it gets a short limit:
+    /// a slow Library step must not hold back the copied link for long.
+    static let registerTimeout: TimeInterval = 15
     private let session: URLSession
     init(configuration: URLSessionConfiguration? = nil) {
         let config = configuration ?? URLSessionConfiguration.ephemeral
@@ -200,7 +219,7 @@ final class WordPressClient {
               (json["capabilities"] as? [String: Any])?["upload_files"] as? Bool == true else { throw WordPressConnectionError.uploadPermission }
         return id
     }
-    func upload(file: URL, mime: String, discovery: WordPressDiscovery, credential: WordPressCredential) async throws -> URL {
+    func upload(file: URL, mime: String, discovery: WordPressDiscovery, credential: WordPressCredential) async throws -> WordPressUpload {
         let allowed = ["image/png": "png", "image/jpeg": "jpg", "video/mp4": "mp4", "video/quicktime": "mov"]
         guard file.isFileURL, let ext = allowed[mime], (try? file.resourceValues(forKeys: [.fileSizeKey]).fileSize).map({ $0 > 0 }) == true else { throw WordPressConnectionError.response }
         var req = try request(discovery.endpoint("wp/v2/media"), credential: credential)
@@ -212,6 +231,57 @@ final class WordPressClient {
         guard let id = json["id"] as? Int, id > 0, let source = json["source_url"] as? String,
               let url = URL(string: source) else { throw WordPressConnectionError.response }
         try WordPressURLRules.validate(url)
-        return url
+        return .init(id: id, fileURL: url)
+    }
+    #if !OFFLINE
+    /// Asks the site for a VideoPress upload pass with the Approve-page password (Jetpack's
+    /// `wpcom/v2/videopress/upload-jwt`, the route the block editor uses). nil when the site
+    /// can't give one (no VideoPress, Jetpack not connected, any error), so the caller uploads to Media.
+    /// The pass only works on WordPress.com's upload host; the site password never goes there.
+    func videoPressTicket(discovery: WordPressDiscovery, credential: WordPressCredential) async -> WPComClient.VideoTicket? {
+        guard var req = try? request(discovery.endpoint("wpcom/v2/videopress/upload-jwt"), credential: credential) else { return nil }
+        req.httpMethod = "POST"
+        guard let (data, response) = try? await session.data(for: req),
+              let json = try? object(data, response: response),
+              let token = json["upload_token"] as? String, !token.isEmpty, !token.contains("\n"), !token.contains("\r"),
+              let raw = json["upload_url"] as? String, let endpoint = URL(string: raw),
+              (try? WPComClient.validateAPIURL(endpoint)) != nil else { return nil }
+        return .init(endpoint: endpoint, token: token)
+    }
+    #endif
+    /// Marks an uploaded attachment as a shot. Never throws: an upload stands even if this fails.
+    /// Network errors and server errors get one retry.
+    /// `videoPressGUID` is the ID a VideoPress upload handed back; the plugin uses it to give the
+    /// video to the uploader instead of the site's connection account.
+    func register(mediaID: Int, videoPressGUID: String? = nil, discovery: WordPressDiscovery, credential: WordPressCredential) async -> WordPressRegistration {
+        guard mediaID > 0, var req = try? request(discovery.endpoint("pressshot/v1/captures/\(mediaID)/register"), credential: credential) else { return .failed }
+        req.httpMethod = "POST"
+        req.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        req.timeoutInterval = Self.registerTimeout
+        var body = ["source": "pressshot"]
+        if let videoPressGUID { body["videopressGuid"] = videoPressGUID }
+        guard let encoded = try? JSONSerialization.data(withJSONObject: body, options: [.sortedKeys]) else { return .failed }
+        req.httpBody = encoded
+        for attempt in 0..<2 {
+            let data: Data, status: Int
+            do {
+                let (body, response) = try await session.data(for: req)
+                guard let http = response as? HTTPURLResponse else { return .failed }
+                data = body; status = http.statusCode
+            } catch is CancellationError { return .failed }
+            catch { if attempt == 0 { continue }; return .failed }
+            let json = (try? JSONSerialization.jsonObject(with: data)) as? [String: Any]
+            switch status {
+            case 200..<300:
+                guard let raw = json?["shareUrl"] as? String, let url = URL(string: raw),
+                      (try? WordPressURLRules.validate(url)) != nil, WordPressURLRules.sameOrigin(discovery.siteURL, url) else { return .failed }
+                return .shared(url)
+            case 404:
+                return (json?["code"] as? String)?.hasPrefix("pressshot_") == true ? .failed : .noPlugin
+            case 500...599 where attempt == 0: continue
+            default: return .failed
+            }
+        }
+        return .failed
     }
 }

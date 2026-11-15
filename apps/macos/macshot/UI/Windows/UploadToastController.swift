@@ -92,6 +92,15 @@ class UploadToastController {
 
     func updateStatus(_ status: String) { statusLabel?.stringValue = status }
 
+    /// Replaces the success title with a note, such as "File link copied · not added to the Library".
+    /// One point smaller than the title, and widened up to 6 pt short of the Open button, so the note fits.
+    func showSuccessNote(_ note: String) {
+        if let label = statusLabel { label.frame.size.width = toastWidth - 50 - 82 }
+        statusLabel?.font = NSFont.systemFont(ofSize: 12, weight: .semibold)
+        statusLabel?.stringValue = note
+        statusLabel?.toolTip = note
+    }
+
     func showSuccess(link: String, deleteURL: String) {
         guard let window = window, let contentView = window.contentView else { return }
         self.currentLink = link

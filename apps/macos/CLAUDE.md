@@ -1,6 +1,6 @@
 # macshot
 
-Native macOS screenshot & annotation tool inspired by Flameshot. Built with Swift + AppKit. No Qt, no Electron.
+Native macOS screenshot & annotation tool. Built with Swift + AppKit. No Qt, no Electron.
 
 ## Project Setup
 

@@ -789,7 +789,7 @@ The big release in 4.1.0 is a full **video editor effects suite**: zoom, censor,
 - **Copy Screen Info** button in Settings > About — copies display and capture diagnostics to clipboard for bug reports.
 
 ### Fixed
-- **Wrong colors on external monitors (third attempt)** — removed the 8-bit pixel format conversion (`copyTo8BitBGRA`) that was corrupting colors on some monitors. The raw CGImage from ScreenCaptureKit is now passed through directly and AppKit handles color management natively, matching how other screenshot tools (e.g. Shottr) work.
+- **Wrong colors on external monitors (third attempt)** — removed the 8-bit pixel format conversion (`copyTo8BitBGRA`) that was corrupting colors on some monitors. The raw CGImage from ScreenCaptureKit is now passed through directly and AppKit handles color management natively, matching how other screenshot tools work.
 - **Editor cursor previews not showing** — loupe follow, pencil/marker circle, stamp preview, and other cursor overlays were broken in the editor window since beta 9. A window-snap cooldown flag was blocking `mouseMoved` events.
 
 ## [4.0.5-beta.11] - 2026-04-15
@@ -1356,7 +1356,7 @@ The big release in 4.1.0 is a full **video editor effects suite**: zoom, censor,
 - **Image effects (Adjust)** — new "Adjust" button in the toolbar with non-destructive CIFilter-based image effects. Includes 8 presets (Noir, Mono, Sepia, Chrome, Fade, Instant, Vivid) and 4 adjustment sliders (Brightness, Contrast, Saturation, Sharpness). Works independently of Beautify — use effects alone, with Beautify, or both. Live preview in the overlay.
 - **Auto-blur/pixelate faces** — one-click face detection using Apple Vision to blur or pixelate all faces in the selection. Available in the blur/pixelate tool options row.
 - **Auto-blur/pixelate people** — one-click human body detection to blur or pixelate all people in the selection.
-- **Text Only draw mode** — segmented control in blur/pixelate options to switch between "All" (blur everything in drawn rectangle) and "Text Only" (OCR the drawn rectangle, blur only detected text lines). Matches Shottr-style content-aware blur.
+- **Text Only draw mode** — segmented control in blur/pixelate options to switch between "All" (blur everything in drawn rectangle) and "Text Only" (OCR the drawn rectangle, blur only detected text lines). Content-aware blur.
 
 ### Changed
 - **Improved blur/pixelate options row** — reorganized with clear grouping: "Draw" mode selector, "Auto" detection buttons (All Text, PII, Types), and detection buttons (Faces, People). Dimmed section labels and pipe separators make the layout easier to scan.

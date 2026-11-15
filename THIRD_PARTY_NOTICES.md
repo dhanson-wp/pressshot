@@ -6,7 +6,7 @@ PressShot's native app source is derived from [MacShot by sw33tLie](https://gith
 
 The GPLv3 license text is preserved unchanged at root LICENSE and apps/macos/LICENSE. Preserve upstream authorship and notices. Add visible MacShot credit to PressShot's About interface when that approved interface is implemented. PressShot isn't an official MacShot release.
 
-The source-only import excludes the upstream marketing website/artwork and per-user Xcode state; see docs/architecture/macshot-import-record.md. No BetterShot/Cap-derived source was separately introduced.
+The source-only import excludes the upstream marketing website/artwork and per-user Xcode state; see docs/architecture/macshot-import-record.md. No source derived from other screenshot apps was separately introduced.
 
 ## Locked native dependencies
 

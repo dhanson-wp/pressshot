@@ -5,7 +5,7 @@ extension Notification.Name {
 }
 
 // Toolbar buttons drawn directly in the OverlayView (not a separate window).
-// This avoids window-level z-order issues and matches Flameshot's look.
+// This avoids window-level z-order issues.
 
 enum ToolbarButtonAction {
     case tool(AnnotationTool)
@@ -239,7 +239,7 @@ enum ToolbarActionPreferences {
 
 class ToolbarLayout {
 
-    // Default theme colors (Flameshot purple style)
+    // Default theme colors (purple)
     static let defaultAccentColor = NSColor(srgbRed: 49.0/255, green: 89.0/255, blue: 216.0/255, alpha: 1.0)
     static let defaultIconColor = NSColor.white
     static let defaultBgColor = NSColor(white: 0.12, alpha: 1.0)

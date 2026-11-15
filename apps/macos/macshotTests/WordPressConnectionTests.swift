@@ -134,6 +134,74 @@ final class WordPressConnectionTests: XCTestCase {
         }
         do { _ = try await client.upload(file: file, mime: "image/png", discovery: discovery, credential: credential); XCTFail("Invalid link accepted") } catch { XCTAssertTrue(error is WordPressConnectionError) }
     }
+    private func body(_ request: URLRequest) -> Data {
+        if let data = request.httpBody { return data }
+        guard let stream = request.httpBodyStream else { return Data() }
+        stream.open(); defer { stream.close() }
+        var data = Data(); var buffer = [UInt8](repeating: 0, count: 4096)
+        while stream.hasBytesAvailable { let n = stream.read(&buffer, maxLength: buffer.count); if n <= 0 { break }; data.append(buffer, count: n) }
+        return data
+    }
+    private let shareResponse = #"{"id":22,"source":"pressshot","shareUrl":"https://wordpress.example/s/Ab3d"}"#
+    func testRegisterSendsSourceWithSameCredentialAndReturnsShareLink() async throws {
+        var requests = 0
+        let api = client { request in
+            requests += 1
+            XCTAssertEqual(request.httpMethod, "POST")
+            XCTAssertEqual(request.url?.path, "/subsite/wp-json/pressshot/v1/captures/22/register")
+            XCTAssertEqual(request.value(forHTTPHeaderField: "Authorization"), "Basic " + Data("synthetic:synthetic-application-password".utf8).base64EncodedString())
+            XCTAssertEqual(request.value(forHTTPHeaderField: "Content-Type"), "application/json")
+            XCTAssertEqual(request.timeoutInterval, WordPressClient.registerTimeout)
+            XCTAssertEqual(WordPressClient.registerTimeout, 15)
+            XCTAssertEqual(try JSONSerialization.jsonObject(with: self.body(request)) as? [String: String], ["source": "pressshot"])
+            return (200, Data(self.shareResponse.utf8))
+        }
+        let result = await api.register(mediaID: 22, discovery: discovery, credential: credential)
+        XCTAssertEqual(result, .shared(URL(string: "https://wordpress.example/s/Ab3d")!))
+        XCTAssertEqual(requests, 1)
+    }
+    func testRegisterKeepsRestRouteOnPlainPermalinkSites() async throws {
+        let plain = WordPressDiscovery(siteURL: site, apiURL: URL(string: "https://wordpress.example/subsite/?rest_route=/")!, title: "Synthetic", authorizationURL: nil)
+        let api = client { request in
+            let c = URLComponents(url: request.url!, resolvingAgainstBaseURL: false)!
+            XCTAssertEqual(c.queryItems?.first(where: { $0.name == "rest_route" })?.value, "/pressshot/v1/captures/22/register")
+            return (200, Data(self.shareResponse.utf8))
+        }
+        let result = await api.register(mediaID: 22, discovery: plain, credential: credential)
+        XCTAssertEqual(result, .shared(URL(string: "https://wordpress.example/s/Ab3d")!))
+    }
+    func testRegisterWithoutPluginIsQuiet() async throws {
+        for answer in [Data(#"{"code":"rest_no_route"}"#.utf8), Data()] {
+            var requests = 0
+            let result = await client { _ in requests += 1; return (404, answer) }.register(mediaID: 22, discovery: discovery, credential: credential)
+            XCTAssertEqual(result, .noPlugin); XCTAssertEqual(requests, 1)
+        }
+    }
+    func testRegisterRefusesForeignOrMissingShareLink() async throws {
+        for answer in [#"{"id":22,"shareUrl":"https://other.example/s/x"}"#, #"{"id":22,"shareUrl":"javascript:alert(1)"}"#, #"{"id":22}"#] {
+            let result = await client { _ in (200, Data(answer.utf8)) }.register(mediaID: 22, discovery: discovery, credential: credential)
+            XCTAssertEqual(result, .failed, answer)
+        }
+    }
+    func testRegisterPluginErrorsFailWithoutRetry() async throws {
+        for (code, name) in [(400, "pressshot_unknown_source"), (403, "pressshot_forbidden"), (404, "pressshot_not_found")] {
+            var requests = 0
+            let result = await client { _ in requests += 1; return (code, Data(#"{"code":"\#(name)"}"#.utf8)) }.register(mediaID: 22, discovery: discovery, credential: credential)
+            XCTAssertEqual(result, .failed, name); XCTAssertEqual(requests, 1, name)
+        }
+    }
+    func testRegisterRetriesOnceAfterNetworkOrServerError() async throws {
+        var requests = 0
+        let recovered = await client { _ in
+            requests += 1
+            if requests == 1 { throw URLError(.timedOut) }
+            return (200, Data(self.shareResponse.utf8))
+        }.register(mediaID: 22, discovery: discovery, credential: credential)
+        XCTAssertEqual(recovered, .shared(URL(string: "https://wordpress.example/s/Ab3d")!)); XCTAssertEqual(requests, 2)
+        requests = 0
+        let failed = await client { _ in requests += 1; return (500, Data("{}".utf8)) }.register(mediaID: 22, discovery: discovery, credential: credential)
+        XCTAssertEqual(failed, .failed); XCTAssertEqual(requests, 2)
+    }
     private final class MemoryCredentials: WordPressCredentialStore {
         var values: [String: WordPressCredential] = [:]
         var failWrites = false
@@ -173,6 +241,8 @@ final class WordPressConnectionTests: XCTestCase {
         var requests = 0
         let api = client { request in
             requests += 1
+            if request.url?.path == "/subsite/wp-json/pressshot/v1/captures/23/register" { return (200, Data(#"{"id":23,"shareUrl":"https://wordpress.example/s/Rec1"}"#.utf8)) }
+            if request.url?.path == "/subsite/wp-json/wpcom/v2/videopress/upload-jwt" { return (404, Data(#"{"code":"rest_no_route"}"#.utf8)) }
             XCTAssertEqual(request.url?.path, "/subsite/wp-json/wp/v2/media")
             XCTAssertEqual(request.value(forHTTPHeaderField: "Content-Type"), "video/mp4")
             XCTAssertEqual(request.value(forHTTPHeaderField: "Authorization"), "Basic " + Data("synthetic:synthetic-application-password".utf8).base64EncodedString())
@@ -184,12 +254,37 @@ final class WordPressConnectionTests: XCTestCase {
         let file = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString + ".mp4")
         try Data("synthetic video".utf8).write(to: file); defer { try? FileManager.default.removeItem(at: file) }
         let link = try await store.uploadRecording(provider: destination.providerID, file: file)
-        XCTAssertEqual(link, "https://wordpress.example/subsite/synthetic.mp4")
-        XCTAssertEqual(requests, 1)
+        XCTAssertEqual(link, PressShotDeliveryCenter.Delivered(link: "https://wordpress.example/s/Rec1"))
+        XCTAssertEqual(requests, BuildVariant.isOffline ? 2 : 3)
         XCTAssertTrue(FileManager.default.fileExists(atPath: file.path))
         do { _ = try await store.uploadRecording(provider: "wordpress:missing", file: file); XCTFail("Missing destination accepted") }
         catch { XCTAssertTrue(error is WordPressConnectionError) }
-        XCTAssertEqual(requests, 1)
+        XCTAssertEqual(requests, BuildVariant.isOffline ? 2 : 3)
     }
 
+    private func uploadImage(registerStatus: Int, registerBody: String) async throws -> PressShotDeliveryCenter.Delivered {
+        let suite = TestDefaultsSuite.uniqueName("wordpress-image")
+        let defaults = UserDefaults(suiteName: suite)!; defer { TestDefaultsSuite.remove(defaults, named: suite) }
+        let media = try json(["id": 24, "source_url": "https://wordpress.example/subsite/synthetic.png"])
+        let api = client { request in
+            request.url?.path.hasSuffix("/register") == true ? (registerStatus, Data(registerBody.utf8)) : (201, media)
+        }
+        let store = WordPressDestinationsStore(defaults: defaults, credentials: MemoryCredentials(), client: api)
+        let destination = try store.save(discovery: discovery, credential: credential, userID: 3)
+        let image = ImageProbe.makeImage(width: 8, height: 8) { $0.setFillColor(NSColor.red.cgColor); $0.fill(CGRect(x: 0, y: 0, width: 8, height: 8)) }
+        let result = await withCheckedContinuation { continuation in
+            store.uploadImage(provider: destination.providerID, image: image) { continuation.resume(returning: $0) }
+        }
+        return try result.get()
+    }
+    func testImageUploadFallsBackToFileLinkWithNoteWhenRegisterFails() async throws {
+        let delivered = try await uploadImage(registerStatus: 403, registerBody: #"{"code":"pressshot_forbidden"}"#)
+        XCTAssertEqual(delivered, .init(link: "https://wordpress.example/subsite/synthetic.png", note: "File link copied · not added to the Library"))
+        XCTAssertEqual(WordPressDestinationsStore.libraryNote, "File link copied · not added to the Library")
+    }
+    func testImageUploadWithoutPluginCopiesFileLinkQuietly() async throws {
+        let delivered = try await uploadImage(registerStatus: 404, registerBody: #"{"code":"rest_no_route"}"#)
+        XCTAssertEqual(delivered, .init(link: "https://wordpress.example/subsite/synthetic.png"))
+        XCTAssertNil(delivered.note)
+    }
 }

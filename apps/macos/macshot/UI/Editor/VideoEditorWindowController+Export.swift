@@ -296,8 +296,11 @@ extension VideoEditorWindowController {
             } else if wordpress != nil {
                 self.showStatus("Uploading to " + label + "…", persist: true)
                 Task {
-                    do { finish(.success(try await WordPressDestinationsStore.shared.uploadRecording(provider: provider, file: url))) }
-                    catch { finish(.failure(error)) }
+                    do {
+                        let delivered = try await WordPressDestinationsStore.shared.uploadRecording(provider: provider, file: url)
+                        finish(.success(delivered.link))
+                        if let note = delivered.note { self.showStatus(note) }
+                    } catch { finish(.failure(error)) }
                 }
             } else if provider == "s3" {
                 S3Uploader.shared.uploadVideo(url: url, progress: progress, completion: finish)

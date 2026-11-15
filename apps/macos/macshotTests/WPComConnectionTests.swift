@@ -84,16 +84,11 @@ final class WPComConnectionTests: XCTestCase {
         XCTAssertEqual(result.mediaID, 42); XCTAssertNil(result.videoPressGUID)
         XCTAssertEqual(result.link.absoluteString, "https://images.example/synthetic.png")
     }
-    func testLibraryLinkComesOnlyFromWhatTheSiteReports() throws {
-        // Reference values come from the Library's share-code function.
-        XCTAssertEqual(PressShotLibraryLink.code(fileName: "PressShot-AAAA.png"), "3TWVzo32")
-        XCTAssertEqual(PressShotLibraryLink.code(fileName: "synthetic.png"), "BMaxxDTW")
-        let source = URL(string: "https://images.example/wp-content/uploads/2026/11/PressShot-AAAA.png")!
-        XCTAssertEqual(PressShotLibraryLink.screenshot(source: source, reported: "https://library.example")?.absoluteString, "https://library.example/#i/3TWVzo32")
-        XCTAssertEqual(PressShotLibraryLink.screenshot(source: source, reported: "https://Library.Example/")?.absoluteString, "https://library.example/#i/3TWVzo32")
-        let refused: [Any?] = [nil, NSNull(), 42, "", "http://library.example", "https://user@library.example", "https://library.example:8443",
-                               "https://library.example/path", "https://library.example?x=1", "https://library.example/#i/x", "javascript:alert(1)", "library.example"]
-        for value in refused { XCTAssertNil(PressShotLibraryLink.screenshot(source: source, reported: value), String(describing: value)) }
+    func testImageLinkIgnoresRetiredLibraryField() async throws {
+        let file = try file(ext: "png"); defer { try? FileManager.default.removeItem(at: file) }
+        let data = try json(["id": 42, "source_url": "https://images.example/synthetic.png", "pressshot_library": "https://library.example"])
+        let result = try await client { _ in (200, [:], data) }.uploadImage(file: file, siteID: 7, token: "synthetic")
+        XCTAssertEqual(result.link.absoluteString, "https://images.example/synthetic.png")
     }
     func testUntrustedUploadEndpointNeverReceivesToken() async throws {
         let data = try json(["upload_token": "synthetic", "upload_url": "https://foreign.example/upload"])

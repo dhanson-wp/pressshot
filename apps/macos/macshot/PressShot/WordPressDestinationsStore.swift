@@ -52,13 +52,29 @@ final class WordPressDestinationsStore {
     static let changed = Notification.Name("pressshot.wordpressConnectionsChanged")
     private let defaults: UserDefaults
     private let client: WordPressClient
+    #if !OFFLINE
+    private let videoUpload: WPComVideoUpload
+    #endif
     let credentials: WordPressCredentialStore
-    private let key = "pressshotWordPressDestinations"
+    private static let storageKey = "pressshotWordPressDestinations"
+    private var key: String { Self.storageKey }
     private(set) var destinations: [WordPressDestination]
+    #if !OFFLINE
+    init(defaults: UserDefaults = .standard, credentials: WordPressCredentialStore? = nil, client: WordPressClient? = nil, videoUpload: WPComVideoUpload? = nil) {
+        self.videoUpload = videoUpload ?? WPComVideoUpload(client: WPComClient())
+        self.defaults = defaults; self.credentials = credentials ?? WordPressKeychain(); self.client = client ?? WordPressClient()
+        destinations = Self.load(defaults, key: Self.storageKey)
+    }
+    #else
     init(defaults: UserDefaults = .standard, credentials: WordPressCredentialStore? = nil, client: WordPressClient? = nil) {
         self.defaults = defaults; self.credentials = credentials ?? WordPressKeychain(); self.client = client ?? WordPressClient()
-        destinations = defaults.data(forKey: key).flatMap { try? JSONDecoder().decode([WordPressDestination].self, from: $0) } ?? []
+        destinations = Self.load(defaults, key: Self.storageKey)
+    }
+    #endif
+    private static func load(_ defaults: UserDefaults, key: String) -> [WordPressDestination] {
+        var destinations = defaults.data(forKey: key).flatMap { try? JSONDecoder().decode([WordPressDestination].self, from: $0) } ?? []
         destinations = destinations.filter { UUID(uuidString: $0.id) != nil && (try? WordPressURLRules.validate($0.siteURL)) != nil && (try? WordPressURLRules.validate($0.apiURL)) != nil && WordPressURLRules.sameOrigin($0.siteURL, $0.apiURL) }
+        return destinations
     }
     func destination(provider: String) -> WordPressDestination? { destinations.first { $0.providerID == provider } }
     @discardableResult
@@ -85,7 +101,32 @@ final class WordPressDestinationsStore {
     }
     private func persist() { defaults.set(try? JSONEncoder().encode(destinations), forKey: key); announce() }
     private func announce() { NotificationCenter.default.post(name: Self.changed, object: self) }
-    func uploadRecording(provider: String, file: URL) async throws -> String {
+    static let libraryNote = "File link copied · not added to the Library"
+    /// Upload, then register the attachment as a Library shot. Registering never fails the upload:
+    /// a site without the plugin keeps the file link quietly; a failed registration keeps it with a note.
+    /// Recordings go to VideoPress when the site gives an upload pass, otherwise to Media like screenshots.
+    private func deliver(file: URL, mime: String, destination: WordPressDestination, credential: WordPressCredential) async throws -> PressShotDeliveryCenter.Delivered {
+        let id: Int, fileLink: URL
+        var guid: String?
+        #if !OFFLINE
+        if mime.hasPrefix("video/"), let ticket = await client.videoPressTicket(discovery: destination.discovery, credential: credential) {
+            let upload = try await videoUpload.upload(file: file, ticket: ticket)
+            id = upload.mediaID; fileLink = upload.link; guid = upload.videoPressGUID
+        } else {
+            let upload = try await client.upload(file: file, mime: mime, discovery: destination.discovery, credential: credential)
+            id = upload.id; fileLink = upload.fileURL
+        }
+        #else
+        let upload = try await client.upload(file: file, mime: mime, discovery: destination.discovery, credential: credential)
+        id = upload.id; fileLink = upload.fileURL
+        #endif
+        switch await client.register(mediaID: id, videoPressGUID: guid, discovery: destination.discovery, credential: credential) {
+        case .shared(let link): return .init(link: link.absoluteString)
+        case .noPlugin: return .init(link: fileLink.absoluteString)
+        case .failed: return .init(link: fileLink.absoluteString, note: Self.libraryNote)
+        }
+    }
+    func uploadRecording(provider: String, file: URL) async throws -> PressShotDeliveryCenter.Delivered {
         let mime: String
         switch file.pathExtension.lowercased() {
         case "mp4": mime = "video/mp4"
@@ -94,7 +135,7 @@ final class WordPressDestinationsStore {
         }
         guard let destination = destination(provider: provider) else { throw WordPressConnectionError.response }
         let credential = try credentials.read(destination.id)
-        return try await client.upload(file: file, mime: mime, discovery: destination.discovery, credential: credential).absoluteString
+        return try await deliver(file: file, mime: mime, destination: destination, credential: credential)
     }
     func uploadImage(provider: String, image: NSImage, completion: @escaping PressShotDeliveryCenter.Completion) {
         guard let destination = destination(provider: provider),
@@ -108,8 +149,7 @@ final class WordPressDestinationsStore {
             do {
                 let credential = try credentials.read(destination.id)
                 try data.write(to: file, options: .atomic)
-                let url = try await WordPressClient().upload(file: file, mime: "image/png", discovery: destination.discovery, credential: credential)
-                completion(.success(url.absoluteString))
+                completion(.success(try await deliver(file: file, mime: "image/png", destination: destination, credential: credential)))
             } catch { completion(.failure(error)) }
         }
     }

@@ -393,6 +393,77 @@ final class HotkeyManagerTests: XCTestCase {
         }
     }
 
+    // MARK: Default shortcuts, saved so a later build can't change them
+
+    func testDefaultShortcuts() {
+        let shiftOption = UInt32(shiftKey | optionKey)
+        let expected: [HotkeyManager.HotkeySlot: UInt32] = [
+            .captureArea: UInt32(kVK_ANSI_3),   // capture with markup
+            .quickCapture: UInt32(kVK_ANSI_4),  // screenshot, upload, copy link
+            .recordArea: UInt32(kVK_ANSI_5),
+            .recordGIF: UInt32(kVK_ANSI_2),
+        ]
+        for slot in HotkeyManager.HotkeySlot.allCases {
+            if let key = expected[slot] {
+                XCTAssertEqual(slot.defaultKeyCode, key, "\(slot)")
+                XCTAssertEqual(slot.defaultModifiers, shiftOption, "\(slot)")
+            } else {
+                XCTAssertEqual(slot.defaultKeyCode, 0, "\(slot) starts with no shortcut")
+                XCTAssertEqual(slot.defaultModifiers, 0, "\(slot) starts with no shortcut")
+            }
+        }
+    }
+
+    func testSavingDefaultsWritesEveryUnsetSlot() {
+        withCleanHotkeys(HotkeyManager.HotkeySlot.allCases) {
+            HotkeyManager.saveDefaultsForUnsetSlots()
+            let defaults = UserDefaults.standard
+            for slot in HotkeyManager.HotkeySlot.allCases {
+                if slot.defaultModifiers != 0 {
+                    XCTAssertEqual(defaults.integer(forKey: slot.keyCodeKey), Int(slot.defaultKeyCode), "\(slot)")
+                    XCTAssertEqual(defaults.integer(forKey: slot.modifiersKey), Int(slot.defaultModifiers), "\(slot)")
+                } else {
+                    XCTAssertTrue(defaults.bool(forKey: slot.disabledKey), "\(slot) is saved as no shortcut")
+                }
+                let read = HotkeyManager.readHotkey(for: slot)
+                XCTAssertEqual(read.keyCode, slot.defaultKeyCode)
+                XCTAssertEqual(read.modifiers, slot.defaultModifiers)
+            }
+        }
+    }
+
+    func testSavingDefaultsNeverChangesAChosenOrClearedShortcut() {
+        let area = HotkeyManager.HotkeySlot.captureArea
+        let quick = HotkeyManager.HotkeySlot.quickCapture
+        let mods = UInt32(cmdKey | controlKey)
+        withCleanHotkeys(HotkeyManager.HotkeySlot.allCases) {
+            HotkeyManager.saveHotkey(for: area, keyCode: UInt32(kVK_ANSI_K), modifiers: mods)
+            HotkeyManager.disableHotkey(for: quick)
+            HotkeyManager.saveDefaultsForUnsetSlots()
+            HotkeyManager.saveDefaultsForUnsetSlots()
+            XCTAssertEqual(HotkeyManager.readHotkey(for: area).keyCode, UInt32(kVK_ANSI_K))
+            XCTAssertEqual(HotkeyManager.readHotkey(for: area).modifiers, mods)
+            XCTAssertEqual(HotkeyManager.readHotkey(for: quick).keyCode, 0, "a cleared shortcut stays cleared")
+        }
+    }
+
+    func testRegisteringSavesTheShortcutsSoNewDefaultsDontReachThisMac() {
+        withCleanHotkeys(HotkeyManager.HotkeySlot.allCases) {
+            let noop: () -> Void = {}
+            HotkeyManager.shared.registerAll(
+                captureArea: noop, captureFullScreen: noop, recordArea: noop, recordScreen: noop,
+                historyOverlay: noop, captureOCR: noop, quickCapture: noop, scrollCapture: noop,
+                openFromClipboard: noop, captureLastArea: noop, pinFromClipboard: noop,
+                clearHistory: noop, recordGIF: noop)
+            HotkeyManager.shared.unregisterAll()
+            for slot in HotkeyManager.HotkeySlot.allCases {
+                let defaults = UserDefaults.standard
+                let saved = defaults.object(forKey: slot.keyCodeKey) != nil || defaults.bool(forKey: slot.disabledKey)
+                XCTAssertTrue(saved, "\(slot) is saved, not left to whatever a later build defaults to")
+            }
+        }
+    }
+
     func testADifferentModifierIsADifferentChord() {
         let first = HotkeyManager.HotkeySlot.captureLastArea
         let second = HotkeyManager.HotkeySlot.pinFromClipboard
