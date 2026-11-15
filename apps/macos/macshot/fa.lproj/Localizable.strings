@@ -547,6 +547,10 @@
 "Save & Close" = "ذخیره و بستن";
 "Discard" = "صرف‌نظر";
 "Stop Recording" = "توقف ضبط ویدیو";
+"Discard Recording" = "صرف‌نظر از ضبط";
+"Discard this recording?" = "از این ضبط صرف‌نظر شود؟";
+"Nothing gets saved or uploaded, and you can't undo this." = "چیزی ذخیره یا بارگذاری نمی‌شود و این کار قابل بازگشت نیست.";
+"Keep Recording" = "ادامهٔ ضبط";
 "Pause" = "مکث";
 "Resume" = "ادامه";
 "Engine:" = "موتور:";

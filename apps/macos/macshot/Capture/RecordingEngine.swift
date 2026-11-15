@@ -22,6 +22,9 @@ final class RecordingEngine: NSObject {
     /// it waits for setup to hand them to the single finalization path.
     private var setupTask: Task<Void, Never>?
     private var captureError: Error?
+    /// The user threw this take away: finish it like a stop, then delete the
+    /// take folder and report no file and no error.
+    private var discarding = false
     private var recordingActivity: NSObjectProtocol?
     private var diskMonitor: DispatchSourceTimer?
     private var sleepObserver: NSObjectProtocol?
@@ -199,6 +202,27 @@ final class RecordingEngine: NSObject {
 
     func stopRecording() {
         stopRecording(error: nil)
+    }
+
+    /// Stops the take and deletes it with its pointer data, camera file and AI
+    /// notes. The completion reports no file and no error, so nothing is
+    /// saved, uploaded or added to history. Works while recording, paused or
+    /// still starting; once a stop is under way the take is discarded too.
+    func discardRecording() {
+        guard Self.canDiscard(lifecycle.state) else { return }
+        discarding = true
+        stopRecording(error: nil)
+    }
+
+    /// Discarding needs a take to throw away.
+    nonisolated static func canDiscard(_ state: State) -> Bool {
+        state != .idle
+    }
+
+    /// What the completion reports. A discarded take reports nothing: no file
+    /// to deliver and no failure to show.
+    nonisolated static func completionResult(url: URL?, error: Error?, discarded: Bool) -> (url: URL?, error: Error?) {
+        discarded ? (nil, nil) : (url, error)
     }
 
     private func stopRecording(error: Error?) {
@@ -469,7 +493,7 @@ final class RecordingEngine: NSObject {
             try await writer.finish()
             writerSession = nil
             if let notes {
-                if let url = outputURL, lifecycle.isCurrent(sessionID) { onNotesCaptured?(notes, url) } else { notes.discard() }
+                if !discarding, let url = outputURL, lifecycle.isCurrent(sessionID) { onNotesCaptured?(notes, url) } else { notes.discard() }
             }
             complete(sessionID: sessionID, url: outputURL, error: captureError)
         } catch {
@@ -523,15 +547,24 @@ final class RecordingEngine: NSObject {
         recordingClock = RecordingClock()
         outputURL = nil
         captureError = nil
+        let discarded = discarding
+        discarding = false
         let stored = storedSession
         storedSession = nil
         if let stored = stored {
             recordingQueue.async {
+                if discarded {
+                    stored.discard()
+                    return
+                }
                 try? stored.update(status: error == nil ? "complete" : "interrupted", error: error)
                 stored.removeIfEmpty()
             }
         }
-        if let error = error, let stored = stored {
+        if discarded {
+            let result = Self.completionResult(url: url, error: error, discarded: true)
+            onCompletion?(result.url, result.error)
+        } else if let error = error, let stored = stored {
             onCompletion?(url, NSError(domain: "macshot.recording", code: 1, userInfo: [
                 NSLocalizedDescriptionKey: error.localizedDescription + " Original recording data is kept in Show Recordings in Finder.",
                 NSUnderlyingErrorKey: error,

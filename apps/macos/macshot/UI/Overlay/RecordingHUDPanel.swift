@@ -1,17 +1,19 @@
 import Cocoa
 
-/// Floating recording control bar with stop, pause/resume, timer, and drag handle.
+/// Floating recording control bar with stop, pause/resume, discard, timer, and drag handle.
 /// Sits at `.statusBar + 2` so it's above all recording overlays but not captured by SCStream.
 class RecordingHUDPanel: NSPanel {
 
     var onStopRecording: (() -> Void)?
     var onPauseRecording: (() -> Void)?
     var onResumeRecording: (() -> Void)?
+    var onDiscardRecording: (() -> Void)?
 
     private let timeLabel = NSTextField(labelWithString: "00:00")
     private let recordDot = NSTextField(labelWithString: "●")
     private let stopButton = NSButton()
     private let pauseButton = NSButton()
+    private let discardButton = NSButton()
     private let dragHandle = NSImageView()
     private let containerView = HUDContainerView()
     private(set) var isPaused = false
@@ -19,17 +21,24 @@ class RecordingHUDPanel: NSPanel {
 
     private let hudHeight: CGFloat = 32
     private let cornerRadius: CGFloat = 10
+    /// Fixed so the panel never resizes during recording (prevents origin jumps).
+    static let panelWidth: CGFloat = 190
+    /// The bar's own level, above every recording overlay.
+    static let hudLevel = NSWindow.Level(rawValue: NSWindow.Level.statusBar.rawValue + 2)
+    /// "Discard this recording?" shows above the bar, the overlays, and
+    /// any floating window of the recorded app.
+    static let discardAlertLevel = NSWindow.Level(rawValue: hudLevel.rawValue + 1)
 
     init() {
         super.init(
-            contentRect: NSRect(x: 0, y: 0, width: 164, height: 32),
+            contentRect: NSRect(x: 0, y: 0, width: Self.panelWidth, height: 32),
             styleMask: [.borderless, .nonactivatingPanel],
             backing: .buffered, defer: true
         )
         isOpaque = false
         backgroundColor = .clear
         hasShadow = true
-        level = .statusBar + 2
+        level = Self.hudLevel
         isMovableByWindowBackground = false
         hidesOnDeactivate = false
         ignoresMouseEvents = false
@@ -46,6 +55,7 @@ class RecordingHUDPanel: NSPanel {
 
         setupStopButton()
         setupPauseButton()
+        setupDiscardButton()
         setupTimeLabel()
         setupDragHandle()
     }
@@ -76,6 +86,20 @@ class RecordingHUDPanel: NSPanel {
         pauseButton.toolTip = L("Pause")
         updatePauseIcon()
         containerView.addSubview(pauseButton)
+    }
+
+    private func setupDiscardButton() {
+        discardButton.bezelStyle = .regularSquare
+        discardButton.isBordered = false
+        let cfg = NSImage.SymbolConfiguration(pointSize: 12, weight: .semibold)
+        discardButton.image = NSImage(systemSymbolName: "trash", accessibilityDescription: L("Discard Recording"))?
+            .withSymbolConfiguration(cfg)
+        discardButton.contentTintColor = ToolbarLayout.iconColor
+        discardButton.imageScaling = .scaleProportionallyDown
+        discardButton.target = self
+        discardButton.action = #selector(discardClicked)
+        discardButton.toolTip = L("Discard Recording") + " (Esc)"
+        containerView.addSubview(discardButton)
     }
 
     private func setupTimeLabel() {
@@ -117,18 +141,21 @@ class RecordingHUDPanel: NSPanel {
         let pauseX = stopButton.frame.maxX + 2
         pauseButton.frame = NSRect(x: pauseX, y: (h - btnSize) / 2, width: btnSize, height: btnSize)
 
+        // Discard button
+        let discardX = pauseButton.frame.maxX + 2
+        discardButton.frame = NSRect(x: discardX, y: (h - btnSize) / 2, width: btnSize, height: btnSize)
+
         // Record dot + time label
         recordDot.sizeToFit()
         timeLabel.sizeToFit()
-        let dotX = pauseButton.frame.maxX + 6
+        let dotX = discardButton.frame.maxX + 6
         recordDot.frame.origin = NSPoint(x: dotX, y: (h - recordDot.frame.height) / 2)
         let timeLabelX = recordDot.frame.maxX + 3
         timeLabel.frame.origin = NSPoint(x: timeLabelX, y: (h - timeLabel.frame.height) / 2)
 
         // Drag handle (right side)
         let handleW: CGFloat = 20
-        // Fixed width so the panel never resizes during recording (prevents origin jumps)
-        let totalW: CGFloat = 164
+        let totalW = Self.panelWidth
         dragHandle.frame = NSRect(x: totalW - handleW - pad, y: (h - 16) / 2, width: handleW, height: 16)
 
         // Only set frame size once (first layout), not on every timer tick
@@ -184,6 +211,8 @@ class RecordingHUDPanel: NSPanel {
     // MARK: - Actions
 
     @objc private func stopClicked() { onStopRecording?() }
+
+    @objc private func discardClicked() { onDiscardRecording?() }
 
     @objc private func pauseClicked() {
         if isPaused {

@@ -555,6 +555,10 @@
 "Save & Close" = "सहेजें और बंद करें";
 "Discard" = "त्यागें";
 "Stop Recording" = "रिकॉर्डिंग रोकें";
+"Discard Recording" = "रिकॉर्डिंग हटाएँ";
+"Discard this recording?" = "यह रिकॉर्डिंग हटाएँ?";
+"Nothing gets saved or uploaded, and you can't undo this." = "कुछ भी सहेजा या अपलोड नहीं होगा, और इसे पूर्ववत नहीं किया जा सकता।";
+"Keep Recording" = "रिकॉर्डिंग जारी रखें";
 "Pause" = "विराम";
 "Resume" = "फिर से शुरू करें";
 "Engine:" = "इंजन:";

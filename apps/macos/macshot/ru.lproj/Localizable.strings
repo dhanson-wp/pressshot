@@ -553,6 +553,10 @@
 "Save & Close" = "Сохранить и закрыть";
 "Discard" = "Отклонить";
 "Stop Recording" = "Остановить запись";
+"Discard Recording" = "Удалить запись";
+"Discard this recording?" = "Удалить эту запись?";
+"Nothing gets saved or uploaded, and you can't undo this." = "Ничего не будет сохранено или загружено, и это действие нельзя отменить.";
+"Keep Recording" = "Продолжить запись";
 "Pause" = "Пауза";
 "Resume" = "Продолжить";
 "Engine:" = "Движок:";

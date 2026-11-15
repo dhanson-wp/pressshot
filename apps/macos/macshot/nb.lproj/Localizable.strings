@@ -555,6 +555,10 @@
 "Save & Close" = "Lagre og lukk";
 "Discard" = "Forkast";
 "Stop Recording" = "Stopp opptak";
+"Discard Recording" = "Forkast opptak";
+"Discard this recording?" = "Vil du forkaste dette opptaket?";
+"Nothing gets saved or uploaded, and you can't undo this." = "Ingenting blir lagret eller lastet opp, og dette kan ikke angres.";
+"Keep Recording" = "Fortsett opptaket";
 "Pause" = "Pause";
 "Resume" = "Gjenoppta";
 "Engine:" = "Motor:";

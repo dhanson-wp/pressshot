@@ -554,6 +554,10 @@
 "Save & Close" = "I-save at Isara";
 "Discard" = "Itapon";
 "Stop Recording" = "Ihinto ang Pag-record";
+"Discard Recording" = "Itapon ang Recording";
+"Discard this recording?" = "Itapon ang recording na ito?";
+"Nothing gets saved or uploaded, and you can't undo this." = "Walang mase-save o maa-upload, at hindi na ito maaaring i-undo.";
+"Keep Recording" = "Ituloy ang Pag-record";
 "Pause" = "I-pause";
 "Resume" = "Ipagpatuloy";
 "Engine:" = "Engine:";

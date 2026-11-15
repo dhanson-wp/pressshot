@@ -546,6 +546,10 @@
 "Save & Close" = "Salvează și închide";
 "Discard" = "Renunță";
 "Stop Recording" = "Oprește înregistrarea";
+"Discard Recording" = "Renunță la înregistrare";
+"Discard this recording?" = "Renunți la această înregistrare?";
+"Nothing gets saved or uploaded, and you can't undo this." = "Nimic nu va fi salvat sau încărcat, iar acțiunea nu poate fi anulată.";
+"Keep Recording" = "Continuă înregistrarea";
 "Pause" = "Pauză";
 "Resume" = "Reia";
 "Engine:" = "Motor:";

@@ -543,6 +543,10 @@
 "Save & Close" = "Opslaan en sluiten";
 "Discard" = "Verwerpen";
 "Stop Recording" = "Opname stoppen";
+"Discard Recording" = "Opname weggooien";
+"Discard this recording?" = "Deze opname weggooien?";
+"Nothing gets saved or uploaded, and you can't undo this." = "Er wordt niets bewaard of geüpload, en dit kun je niet ongedaan maken.";
+"Keep Recording" = "Doorgaan met opnemen";
 "Pause" = "Pauzeren";
 "Resume" = "Hervatten";
 "Engine:" = "Engine:";

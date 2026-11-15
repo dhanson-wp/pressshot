@@ -553,6 +553,10 @@
 "Save & Close" = "Lưu và đóng";
 "Discard" = "Bỏ qua";
 "Stop Recording" = "Dừng quay";
+"Discard Recording" = "Hủy bản quay";
+"Discard this recording?" = "Hủy bản quay này?";
+"Nothing gets saved or uploaded, and you can't undo this." = "Sẽ không có gì được lưu hoặc tải lên và bạn không thể hoàn tác.";
+"Keep Recording" = "Tiếp tục quay";
 "Pause" = "Tạm dừng";
 "Resume" = "Tiếp tục";
 "Engine:" = "Công cụ:";

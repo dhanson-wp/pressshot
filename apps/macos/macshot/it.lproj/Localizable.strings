@@ -535,6 +535,10 @@
 "Save & Close" = "Salva e chiudi";
 "Discard" = "Scarta";
 "Stop Recording" = "Interrompi registrazione";
+"Discard Recording" = "Elimina registrazione";
+"Discard this recording?" = "Eliminare questa registrazione?";
+"Nothing gets saved or uploaded, and you can't undo this." = "Non verrà salvato né caricato nulla e l’operazione non si può annullare.";
+"Keep Recording" = "Continua a registrare";
 "Pause" = "Pausa";
 "Resume" = "Riprendi";
 "Engine:" = "Motore:";

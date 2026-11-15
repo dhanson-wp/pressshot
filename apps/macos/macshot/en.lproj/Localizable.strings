@@ -543,6 +543,10 @@
 "Save & Close" = "Save & Close";
 "Discard" = "Discard";
 "Stop Recording" = "Stop Recording";
+"Discard Recording" = "Discard Recording";
+"Discard this recording?" = "Discard this recording?";
+"Nothing gets saved or uploaded, and you can't undo this." = "Nothing gets saved or uploaded, and you can't undo this.";
+"Keep Recording" = "Keep Recording";
 "Pause" = "Pause";
 "Resume" = "Resume";
 "Engine:" = "Engine:";

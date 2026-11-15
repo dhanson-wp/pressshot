@@ -556,6 +556,10 @@
 "Save & Close" = "Simpan & Tutup";
 "Discard" = "Buang";
 "Stop Recording" = "Hentikan Rakaman";
+"Discard Recording" = "Buang Rakaman";
+"Discard this recording?" = "Buang rakaman ini?";
+"Nothing gets saved or uploaded, and you can't undo this." = "Tiada apa-apa akan disimpan atau dimuat naik, dan tindakan ini tidak boleh dibuat asal.";
+"Keep Recording" = "Teruskan Merakam";
 "Pause" = "Jeda";
 "Resume" = "Sambung";
 "Engine:" = "Enjin:";

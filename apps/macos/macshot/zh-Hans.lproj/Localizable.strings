@@ -544,6 +544,10 @@
 "Save & Close" = "保存并关闭";
 "Discard" = "丢弃";
 "Stop Recording" = "停止录制";
+"Discard Recording" = "丢弃录制";
+"Discard this recording?" = "要丢弃此录制吗？";
+"Nothing gets saved or uploaded, and you can't undo this." = "不会保存或上传任何内容，且此操作无法撤销。";
+"Keep Recording" = "继续录制";
 "Pause" = "暂停";
 "Resume" = "继续";
 "Engine:" = "引擎:";

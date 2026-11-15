@@ -556,6 +556,10 @@
 "Save & Close" = "சேமி & மூடு";
 "Discard" = "நிராகரி";
 "Stop Recording" = "பதிவை நிறுத்து";
+"Discard Recording" = "பதிவை நிராகரி";
+"Discard this recording?" = "இந்தப் பதிவை நிராகரிக்கவா?";
+"Nothing gets saved or uploaded, and you can't undo this." = "எதுவும் சேமிக்கப்படாது அல்லது பதிவேற்றப்படாது, இதைச் செயல்தவிர்க்க முடியாது.";
+"Keep Recording" = "பதிவைத் தொடர்";
 "Pause" = "இடைநிறுத்தம்";
 "Resume" = "தொடரவும்";
 "Engine:" = "இயந்திரம்:";

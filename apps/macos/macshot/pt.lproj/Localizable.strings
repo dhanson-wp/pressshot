@@ -544,6 +544,10 @@
 "Save & Close" = "Guardar e fechar";
 "Discard" = "Descartar";
 "Stop Recording" = "Parar gravação";
+"Discard Recording" = "Descartar gravação";
+"Discard this recording?" = "Descartar esta gravação?";
+"Nothing gets saved or uploaded, and you can't undo this." = "Nada será guardado nem carregado, e não é possível anular.";
+"Keep Recording" = "Continuar a gravar";
 "Pause" = "Pausa";
 "Resume" = "Retomar";
 "Engine:" = "Motor:";

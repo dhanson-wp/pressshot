@@ -553,6 +553,10 @@
 "Save & Close" = "Запази и затвори";
 "Discard" = "Отхвърли";
 "Stop Recording" = "Спиране на записа";
+"Discard Recording" = "Отхвърляне на записа";
+"Discard this recording?" = "Да се отхвърли ли този запис?";
+"Nothing gets saved or uploaded, and you can't undo this." = "Нищо няма да бъде запазено или качено и това не може да бъде отменено.";
+"Keep Recording" = "Продължаване на записа";
 "Pause" = "Пауза";
 "Resume" = "Продължаване";
 "Engine:" = "Двигател:";

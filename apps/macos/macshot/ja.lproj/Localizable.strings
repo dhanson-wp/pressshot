@@ -543,6 +543,10 @@
 "Save & Close" = "保存して閉じる";
 "Discard" = "破棄";
 "Stop Recording" = "録画を停止";
+"Discard Recording" = "録画を破棄";
+"Discard this recording?" = "この録画を破棄しますか？";
+"Nothing gets saved or uploaded, and you can't undo this." = "何も保存・アップロードされず、元に戻すことはできません。";
+"Keep Recording" = "録画を続ける";
 "Pause" = "一時停止";
 "Resume" = "再開";
 "Engine:" = "エンジン:";

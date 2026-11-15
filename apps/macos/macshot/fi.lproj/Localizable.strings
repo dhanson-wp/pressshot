@@ -553,6 +553,10 @@
 "Save & Close" = "Tallenna ja sulje";
 "Discard" = "Hylk\U00E4\U00E4";
 "Stop Recording" = "Pys\U00E4yt\U00E4 nauhoitus";
+"Discard Recording" = "Hylkää tallenne";
+"Discard this recording?" = "Hylätäänkö tämä tallenne?";
+"Nothing gets saved or uploaded, and you can't undo this." = "Mitään ei tallenneta eikä ladata, eikä tätä voi kumota.";
+"Keep Recording" = "Jatka tallennusta";
 "Pause" = "Tauko";
 "Resume" = "Jatka";
 "Engine:" = "Moottori:";

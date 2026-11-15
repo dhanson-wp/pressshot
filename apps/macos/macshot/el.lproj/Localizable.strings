@@ -556,6 +556,10 @@
 "Save & Close" = "Αποθήκευση & Κλείσιμο";
 "Discard" = "Απόρριψη";
 "Stop Recording" = "Διακοπή εγγραφής";
+"Discard Recording" = "Απόρριψη εγγραφής";
+"Discard this recording?" = "Απόρριψη αυτής της εγγραφής;";
+"Nothing gets saved or uploaded, and you can't undo this." = "Τίποτα δεν θα αποθηκευτεί ή θα μεταφορτωθεί και η ενέργεια δεν αναιρείται.";
+"Keep Recording" = "Συνέχιση εγγραφής";
 "Pause" = "Παύση";
 "Resume" = "Συνέχιση";
 "Engine:" = "Μηχανή:";

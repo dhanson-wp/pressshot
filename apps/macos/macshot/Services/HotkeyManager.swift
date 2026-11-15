@@ -111,7 +111,48 @@ class HotkeyManager {
     private(set) var isSuspended = false
     private var eventHandlerRef: EventHandlerRef?
 
+    /// Short-lived keys that aren't settings, such as Esc while recording.
+    /// Ids stay clear of `HotkeySlot` raw values.
+    enum TransientKey: UInt32 {
+        case discardRecording = 1000
+    }
+    private var transientRefs: [TransientKey: EventHotKeyRef] = [:]
+    private var transientCallbacks: [TransientKey: () -> Void] = [:]
+
     private init() {}
+
+    /// Take a key system-wide until `unregisterTransient(_:)`. Carbon hotkeys
+    /// need no permission, and the key doesn't reach the front app meanwhile.
+    @discardableResult
+    func registerTransient(_ key: TransientKey, keyCode: UInt32, modifiers: UInt32 = 0,
+                           callback: @escaping () -> Void) -> Bool {
+        unregisterTransient(key)
+        transientCallbacks[key] = callback
+        transientKeyCodes[key] = (keyCode, modifiers)
+        guard !isSuspended else { return false }
+        return armTransient(key, keyCode: keyCode, modifiers: modifiers)
+    }
+
+    func unregisterTransient(_ key: TransientKey) {
+        if let ref = transientRefs[key] {
+            UnregisterEventHotKey(ref)
+            transientRefs[key] = nil
+        }
+        transientCallbacks[key] = nil
+        transientKeyCodes[key] = nil
+    }
+
+    private var transientKeyCodes: [TransientKey: (keyCode: UInt32, modifiers: UInt32)] = [:]
+
+    private func armTransient(_ key: TransientKey, keyCode: UInt32, modifiers: UInt32) -> Bool {
+        installEventHandler()
+        var ref: EventHotKeyRef?
+        let hotkeyID = EventHotKeyID(signature: OSType(0x4D53_4854), id: key.rawValue)
+        let status = RegisterEventHotKey(keyCode, modifiers, hotkeyID, GetApplicationEventTarget(), 0, &ref)
+        guard status == noErr, let ref else { return false }
+        transientRefs[key] = ref
+        return true
+    }
 
     /// Register a callback for a hotkey slot. Reads keyCode/modifiers from UserDefaults.
     func register(slot: HotkeySlot, callback: @escaping () -> Void) {
@@ -175,7 +216,9 @@ class HotkeyManager {
                 GetEventParameter(event, EventParamName(kEventParamDirectObject), EventParamType(typeEventHotKeyID),
                                   nil, MemoryLayout<EventHotKeyID>.size, nil, &hotkeyID)
 
-                if let slot = HotkeySlot(rawValue: Int(hotkeyID.id)), let callback = mgr.callbacks[slot] {
+                if let key = TransientKey(rawValue: hotkeyID.id), let callback = mgr.transientCallbacks[key] {
+                    callback()
+                } else if let slot = HotkeySlot(rawValue: Int(hotkeyID.id)), let callback = mgr.callbacks[slot] {
                     os_log("CARBON HANDLER ENTERED slot=%{public}d abs=%{public}.6f isMain=%{public}@",
                            log: hotkeyLog, type: .info,
                            slot.rawValue, CFAbsoluteTimeGetCurrent(),
@@ -200,7 +243,8 @@ class HotkeyManager {
             UnregisterEventHotKey(ref)
         }
         hotKeyRefs.removeAll()
-        if let handler = eventHandlerRef {
+        // Re-registering every slot must not drop a transient key mid-recording.
+        if transientRefs.isEmpty, let handler = eventHandlerRef {
             RemoveEventHandler(handler)
             eventHandlerRef = nil
         }
@@ -219,6 +263,10 @@ class HotkeyManager {
             UnregisterEventHotKey(ref)
         }
         hotKeyRefs.removeAll()
+        for (_, ref) in transientRefs {
+            UnregisterEventHotKey(ref)
+        }
+        transientRefs.removeAll()
     }
 
     /// Re-register every slot that has a callback, from the stored bindings.
@@ -226,6 +274,9 @@ class HotkeyManager {
         isSuspended = false
         for (slot, callback) in callbacks {
             register(slot: slot, callback: callback)
+        }
+        for (key, binding) in transientKeyCodes where transientCallbacks[key] != nil && transientRefs[key] == nil {
+            _ = armTransient(key, keyCode: binding.keyCode, modifiers: binding.modifiers)
         }
     }
 

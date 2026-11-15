@@ -555,6 +555,10 @@
 "Save & Close" = "Сачувај и затвори";
 "Discard" = "Одбаци";
 "Stop Recording" = "Заустави снимање";
+"Discard Recording" = "Одбаци снимак";
+"Discard this recording?" = "Одбацити овај снимак?";
+"Nothing gets saved or uploaded, and you can't undo this." = "Ништа неће бити сачувано ни отпремљено и ово се не може опозвати.";
+"Keep Recording" = "Настави снимање";
 "Pause" = "Паузирај";
 "Resume" = "Настави";
 "Engine:" = "Мотор:";

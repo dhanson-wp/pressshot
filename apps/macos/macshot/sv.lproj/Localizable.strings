@@ -554,6 +554,10 @@
 "Save & Close" = "Spara och st\U00E4ng";
 "Discard" = "Kasta";
 "Stop Recording" = "Stoppa inspelning";
+"Discard Recording" = "Släng inspelning";
+"Discard this recording?" = "Vill du slänga den här inspelningen?";
+"Nothing gets saved or uploaded, and you can't undo this." = "Inget sparas eller laddas upp, och det går inte att ångra.";
+"Keep Recording" = "Fortsätt spela in";
 "Pause" = "Pausa";
 "Resume" = "\U00C5teruppta";
 "Engine:" = "Motor:";

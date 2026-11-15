@@ -52,6 +52,13 @@ struct RecordingSessionStore: Sendable {
         try data.write(to: directoryURL.appendingPathComponent("session.plist"), options: .atomic)
     }
 
+    /// The user discarded this take: remove the whole folder (video, pointer
+    /// data, camera file and AI notes). The only deletion of a take with
+    /// media in it, and only on the user's explicit request.
+    nonisolated func discard() {
+        try? FileManager.default.removeItem(at: directoryURL)
+    }
+
     /// Only startup cancellation before any media file exists may remove an
     /// empty session. Once bytes exist, retain them for recovery.
     nonisolated func removeIfEmpty() {

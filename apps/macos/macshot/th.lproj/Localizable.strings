@@ -553,6 +553,10 @@
 "Save & Close" = "บันทึกและปิด";
 "Discard" = "ยกเลิก";
 "Stop Recording" = "หยุดบันทึก";
+"Discard Recording" = "ทิ้งการบันทึก";
+"Discard this recording?" = "ทิ้งการบันทึกนี้หรือไม่";
+"Nothing gets saved or uploaded, and you can't undo this." = "จะไม่มีการบันทึกหรืออัปโหลดสิ่งใด และไม่สามารถเลิกทำได้";
+"Keep Recording" = "บันทึกต่อ";
 "Pause" = "หยุดชั่วคราว";
 "Resume" = "ดำเนินการต่อ";
 "Engine:" = "เครื่องมือ:";

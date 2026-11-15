@@ -548,6 +548,10 @@
 "Save & Close" = "حفظ وإغلاق";
 "Discard" = "تجاهل";
 "Stop Recording" = "إيقاف التسجيل";
+"Discard Recording" = "تجاهل التسجيل";
+"Discard this recording?" = "هل تريد تجاهل هذا التسجيل؟";
+"Nothing gets saved or uploaded, and you can't undo this." = "لن يُحفظ أي شيء أو يُرفع، ولا يمكن التراجع عن ذلك.";
+"Keep Recording" = "متابعة التسجيل";
 "Pause" = "إيقاف مؤقت";
 "Resume" = "استئناف";
 "Engine:" = "المحرك:";

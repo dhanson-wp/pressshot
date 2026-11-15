@@ -554,6 +554,10 @@
 "Save & Close" = "Gem og luk";
 "Discard" = "Kassér";
 "Stop Recording" = "Stop optagelse";
+"Discard Recording" = "Kassér optagelse";
+"Discard this recording?" = "Vil du kassere denne optagelse?";
+"Nothing gets saved or uploaded, and you can't undo this." = "Intet bliver gemt eller uploadet, og det kan ikke fortrydes.";
+"Keep Recording" = "Fortsæt optagelse";
 "Pause" = "Pause";
 "Resume" = "Genoptag";
 "Engine:" = "Motor:";

@@ -551,6 +551,10 @@
 "Save & Close" = "Zapisz i zamknij";
 "Discard" = "Odrzuć";
 "Stop Recording" = "Zatrzymaj nagrywanie";
+"Discard Recording" = "Odrzuć nagranie";
+"Discard this recording?" = "Odrzucić to nagranie?";
+"Nothing gets saved or uploaded, and you can't undo this." = "Nic nie zostanie zapisane ani przesłane i nie można tego cofnąć.";
+"Keep Recording" = "Kontynuuj nagrywanie";
 "Pause" = "Wstrzymaj";
 "Resume" = "Wznów";
 "Engine:" = "Silnik:";

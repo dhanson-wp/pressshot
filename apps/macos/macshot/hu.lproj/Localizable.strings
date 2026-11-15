@@ -555,6 +555,10 @@
 "Save & Close" = "Mentés és bezárás";
 "Discard" = "Elvetés";
 "Stop Recording" = "Felvétel leállítása";
+"Discard Recording" = "Felvétel elvetése";
+"Discard this recording?" = "Elveti ezt a felvételt?";
+"Nothing gets saved or uploaded, and you can't undo this." = "Semmi sem lesz mentve vagy feltöltve, és ez nem vonható vissza.";
+"Keep Recording" = "Felvétel folytatása";
 "Pause" = "Szünet";
 "Resume" = "Folytatás";
 "Engine:" = "Motor:";

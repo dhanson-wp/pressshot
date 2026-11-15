@@ -221,6 +221,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, SPUUpdaterDelegate {
     private var audioMergeControllers: [UUID: AudioMergeController] = [:]
     private var recordingOverlayController: OverlayWindowController?
     private var recordingHUDPanel: RecordingHUDPanel?
+    /// "Discard this recording?" is showing; a second click or Esc does nothing.
+    private var isConfirmingDiscard = false
     private var recordingScreenRect: NSRect = .zero  // screen-space capture rect
     private var recordingScreen: NSScreen?
     private var mouseHighlightOverlay: MouseHighlightOverlay?
@@ -3108,6 +3110,9 @@ extension AppDelegate: OverlayWindowControllerDelegate {
             hud.onResumeRecording = { [weak self] in
                 self?.recordingEngine?.resumeRecording()
             }
+            hud.onDiscardRecording = { [weak self] in
+                self?.confirmDiscardRecording()
+            }
             hud.orderFrontRegardless()
             recordingHUDPanel = hud
 
@@ -3161,6 +3166,9 @@ extension AppDelegate: OverlayWindowControllerDelegate {
 
         // Turn menu bar icon into a stop button (ensure it's visible even if user hid it)
         enterRecordingMenuBarMode()
+
+        // Esc asks to discard the take, from any app, until the take ends.
+        armDiscardRecordingKey()
 
         // Collect window IDs of UI chrome to exclude from the recording
         // (selection border + HUD). Webcam, mouse highlight, and keystroke
@@ -3221,6 +3229,58 @@ extension AppDelegate: OverlayWindowControllerDelegate {
     @objc private func stopRecording() {
         guard let engine = recordingEngine else { return }
         engine.stopRecording()
+    }
+
+    private func armDiscardRecordingKey() {
+        HotkeyManager.shared.registerTransient(.discardRecording, keyCode: UInt32(kVK_Escape)) { [weak self] in
+            // Leave the Carbon handler before the question's modal loop starts.
+            DispatchQueue.main.async { self?.confirmDiscardRecording() }
+        }
+    }
+
+    /// Pauses the take and asks before throwing it away. The question box
+    /// stays out of the video because the take is paused while it shows.
+    /// Keep Recording resumes, unless the take was already paused.
+    private func confirmDiscardRecording() {
+        guard let engine = recordingEngine, !isConfirmingDiscard,
+              RecordingEngine.canDiscard(engine.state), engine.state != .stopping else { return }
+        isConfirmingDiscard = true
+        let wasRecording = engine.state == .recording
+        if wasRecording { engine.pauseRecording() }
+        // Esc belongs to the question while it shows (Keep Recording).
+        HotkeyManager.shared.unregisterTransient(.discardRecording)
+        let frontApp = NSWorkspace.shared.frontmostApplication
+
+        let alert = NSAlert()
+        alert.messageText = L("Discard this recording?")
+        alert.informativeText = L("Nothing gets saved or uploaded, and you can't undo this.")
+        alert.alertStyle = .warning
+        let discardButton = alert.addButton(withTitle: L("Discard"))
+        if #available(macOS 11.0, *) { discardButton.hasDestructiveAction = true }
+        let keepButton = alert.addButton(withTitle: L("Keep Recording"))
+        keepButton.keyEquivalent = "\u{1b}"
+        // A plain alert sits at modal-panel level, under the recording
+        // overlays (border, webcam, HUD) and any floating window of the
+        // recorded app. Lift it above all of them, on every Space.
+        alert.layout()
+        alert.window.level = RecordingHUDPanel.discardAlertLevel
+        alert.window.collectionBehavior.formUnion([.canJoinAllSpaces, .fullScreenAuxiliary])
+        NSApp.activate(ignoringOtherApps: true)
+        alert.window.orderFrontRegardless()
+        let response = alert.runModal()
+        isConfirmingDiscard = false
+
+        // The take may have ended on its own while the question showed.
+        guard recordingEngine === engine else { return }
+        if response == .alertFirstButtonReturn {
+            engine.discardRecording()
+        } else {
+            armDiscardRecordingKey()
+            if wasRecording { engine.resumeRecording() }
+        }
+        if let frontApp, frontApp != NSRunningApplication.current {
+            frontApp.activate(options: .activateIgnoringOtherApps)
+        }
     }
 
     private func updateRecordingHUD(seconds: Int) {
@@ -3499,6 +3559,7 @@ extension AppDelegate: OverlayWindowControllerDelegate {
     }
 
     private func stopRecordingUI() {
+        HotkeyManager.shared.unregisterTransient(.discardRecording)
         recordingHUDPanel?.close()
         recordingHUDPanel = nil
         selectionBorderOverlay?.close()

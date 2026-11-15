@@ -550,6 +550,10 @@
 "Save & Close" = "Enregistrer et fermer";
 "Discard" = "Ignorer";
 "Stop Recording" = "Arrêter l'enregistrement";
+"Discard Recording" = "Supprimer l’enregistrement";
+"Discard this recording?" = "Supprimer cet enregistrement ?";
+"Nothing gets saved or uploaded, and you can't undo this." = "Rien ne sera enregistré ni envoyé, et cette action est irréversible.";
+"Keep Recording" = "Continuer l’enregistrement";
 "Pause" = "Pause";
 "Resume" = "Reprendre";
 "Engine:" = "Moteur :";

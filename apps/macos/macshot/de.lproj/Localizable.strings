@@ -544,6 +544,10 @@
 "Save & Close" = "Sichern & Schließen";
 "Discard" = "Verwerfen";
 "Stop Recording" = "Aufzeichnung beenden";
+"Discard Recording" = "Aufnahme verwerfen";
+"Discard this recording?" = "Diese Aufnahme verwerfen?";
+"Nothing gets saved or uploaded, and you can't undo this." = "Es wird nichts gespeichert oder hochgeladen, und das lässt sich nicht rückgängig machen.";
+"Keep Recording" = "Weiter aufnehmen";
 "Pause" = "Pause";
 "Resume" = "Fortsetzen";
 "Engine:" = "Engine:";

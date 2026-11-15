@@ -547,6 +547,10 @@
 "Save & Close" = "שמור וסגור";
 "Discard" = "בטל";
 "Stop Recording" = "הפסק הקלטה";
+"Discard Recording" = "מחק הקלטה";
+"Discard this recording?" = "למחוק את ההקלטה הזו?";
+"Nothing gets saved or uploaded, and you can't undo this." = "שום דבר לא יישמר או יועלה, ולא ניתן לבטל פעולה זו.";
+"Keep Recording" = "המשך הקלטה";
 "Pause" = "השהה";
 "Resume" = "המשך";
 "Engine:" = "מנוע:";

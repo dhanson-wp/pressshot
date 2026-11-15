@@ -548,6 +548,10 @@
 "Save & Close" = "Kaydet ve Kapat";
 "Discard" = "Vazgeç";
 "Stop Recording" = "Kaydı Durdur";
+"Discard Recording" = "Kaydı At";
+"Discard this recording?" = "Bu kayıt atılsın mı?";
+"Nothing gets saved or uploaded, and you can't undo this." = "Hiçbir şey kaydedilmez veya yüklenmez ve bu işlem geri alınamaz.";
+"Keep Recording" = "Kayda Devam Et";
 "Pause" = "Duraklat";
 "Resume" = "Devam Et";
 "Engine:" = "Motor:";

@@ -555,6 +555,10 @@
 "Save & Close" = "儲存並關閉";
 "Discard" = "捨棄";
 "Stop Recording" = "停止錄製";
+"Discard Recording" = "捨棄錄製";
+"Discard this recording?" = "要捨棄此錄製嗎？";
+"Nothing gets saved or uploaded, and you can't undo this." = "不會儲存或上傳任何內容，且此動作無法復原。";
+"Keep Recording" = "繼續錄製";
 "Pause" = "暫停";
 "Resume" = "繼續";
 "Engine:" = "引擎：";

@@ -553,6 +553,10 @@
 "Save & Close" = "Uložiť a zavrieť";
 "Discard" = "Zahodiť";
 "Stop Recording" = "Zastaviť nahrávanie";
+"Discard Recording" = "Zahodiť nahrávku";
+"Discard this recording?" = "Zahodiť túto nahrávku?";
+"Nothing gets saved or uploaded, and you can't undo this." = "Nič sa neuloží ani neodošle a túto akciu nemožno vrátiť späť.";
+"Keep Recording" = "Pokračovať v nahrávaní";
 "Pause" = "Pozastaviť";
 "Resume" = "Pokračovať";
 "Engine:" = "Engine:";

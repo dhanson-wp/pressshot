@@ -556,6 +556,10 @@
 "Save & Close" = "সংরক্ষণ ও বন্ধ";
 "Discard" = "বাতিল";
 "Stop Recording" = "রেকর্ডিং বন্ধ করুন";
+"Discard Recording" = "রেকর্ডিং বাতিল করুন";
+"Discard this recording?" = "এই রেকর্ডিংটি বাতিল করবেন?";
+"Nothing gets saved or uploaded, and you can't undo this." = "কিছুই সংরক্ষণ বা আপলোড হবে না, এবং এটি পূর্বাবস্থায় ফেরানো যাবে না।";
+"Keep Recording" = "রেকর্ডিং চালিয়ে যান";
 "Pause" = "বিরতি";
 "Resume" = "পুনরায় শুরু";
 "Engine:" = "ইঞ্জিন:";

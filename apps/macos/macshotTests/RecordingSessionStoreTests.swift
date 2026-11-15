@@ -35,6 +35,24 @@ final class RecordingSessionStoreTests: XCTestCase {
         XCTAssertNotNil(metadata["error"])
     }
 
+    func testDiscardRemovesTheWholeTakeAndNothingElse() throws {
+        let discarded = try RecordingSessionStore(filename: "Bad take", root: root)
+        let kept = try RecordingSessionStore(filename: "Good take", root: root)
+        try Data("video".utf8).write(to: discarded.mediaURL)
+        try Data("pointer".utf8).write(to: discarded.directoryURL.appendingPathComponent(CursorTelemetry.filename))
+        let notes = discarded.directoryURL.appendingPathComponent("ai-notes/frames", isDirectory: true)
+        try FileManager.default.createDirectory(at: notes, withIntermediateDirectories: true)
+        try Data("# notes".utf8).write(to: notes.deletingLastPathComponent().appendingPathComponent("llm.md"))
+        try Data("frame".utf8).write(to: notes.appendingPathComponent("0001.jpg"))
+        try Data("video".utf8).write(to: kept.mediaURL)
+
+        discarded.discard()
+
+        XCTAssertFalse(FileManager.default.fileExists(atPath: discarded.directoryURL.path))
+        XCTAssertEqual(try Data(contentsOf: kept.mediaURL), Data("video".utf8))
+        XCTAssertTrue(FileManager.default.fileExists(atPath: root.path))
+    }
+
     func testNamesAreDisplayNamesAndFitTheFilesystem() throws {
         for name in ["Vacation / Demo", String(repeating: "🎬", count: 500), "", "  "] {
             let session = try RecordingSessionStore(filename: name, root: root)

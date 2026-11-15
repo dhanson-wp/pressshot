@@ -553,6 +553,10 @@
 "Save & Close" = "Зберегти і закрити";
 "Discard" = "Відхилити";
 "Stop Recording" = "Зупинити запис";
+"Discard Recording" = "Відхилити запис";
+"Discard this recording?" = "Відхилити цей запис?";
+"Nothing gets saved or uploaded, and you can't undo this." = "Нічого не буде збережено чи завантажено, і цю дію не можна скасувати.";
+"Keep Recording" = "Продовжити запис";
 "Pause" = "Пауза";
 "Resume" = "Продовжити";
 "Engine:" = "Рушій:";
