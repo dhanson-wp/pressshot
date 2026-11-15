@@ -213,6 +213,7 @@ nonisolated final class AINotesEventRecorder: @unchecked Sendable {
                 if let bundleID = next.bundleID, AINotesElementInspector.isChromium(bundleID), !exposedBrowsers.contains(next.pid),
                    AINotesElementInspector.exposeWebContent(pid: next.pid) {
                     exposedBrowsers.insert(next.pid)
+                    AINotesBrowserLedger().add(pid: next.pid, bundleID: bundleID)
                 }
                 _ = AINotesElementInspector.element(at: CGPoint(x: geometry.captureRect.midX, y: geometry.captureRect.midY))
             }
@@ -242,12 +243,21 @@ nonisolated final class AINotesEventRecorder: @unchecked Sendable {
         }
     }
 
+    /// Only on `queue`.
+    private func restoreBrowsers() {
+        let ledger = AINotesBrowserLedger()
+        for pid in exposedBrowsers {
+            AINotesElementInspector.restoreWebContent(pid: pid)
+            ledger.remove(pid: pid)
+        }
+        exposedBrowsers = []
+    }
+
     /// The recording was abandoned: stop collecting and undo what was switched on in other apps.
     func abandon() {
         queue.sync {
             finished = true
-            exposedBrowsers.forEach(AINotesElementInspector.restoreWebContent)
-            exposedBrowsers = []
+            restoreBrowsers()
         }
     }
 
@@ -256,8 +266,7 @@ nonisolated final class AINotesEventRecorder: @unchecked Sendable {
         queue.sync {
             flushPending()
             finished = true
-            exposedBrowsers.forEach(AINotesElementInspector.restoreWebContent)
-            exposedBrowsers = []
+            restoreBrowsers()
         }
         let result = frames.finish(duration: duration)
         let events: [AINoteEvent] = queue.sync {
