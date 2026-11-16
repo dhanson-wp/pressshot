@@ -1,6 +1,6 @@
 import Cocoa
 
-/// Approved Keepsake artwork. Outlines preserve the reviewed Fraunces settings
+/// PressShot brand artwork. Outlines preserve the Fraunces settings
 /// without registering a font or changing the native typography of controls.
 @MainActor
 enum PressShotBrand {

@@ -63,7 +63,7 @@ enum PressShotMenu {
         menu.addItem(.separator())
         let openLibrary = item("Open library", library, "square.grid.2x2")
         openLibrary.isEnabled = libraryConnected
-        openLibrary.toolTip = libraryConnected ? "Open your Spacefast library" : "A Spacefast library hasn’t been connected yet"
+        openLibrary.toolTip = libraryConnected ? "Open your Library" : "A Library hasn’t been connected yet"
         #if !OFFLINE
         _ = item("Upload destinations…", destinations, "icloud.and.arrow.up")
         #endif

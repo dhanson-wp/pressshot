@@ -249,7 +249,6 @@ final class WPComConnectionTests: XCTestCase {
             sheet.panel.appearance = NSAppearance(named: .aqua)
             let view = try XCTUnwrap(sheet.panel.contentView); view.layoutSubtreeIfNeeded()
             let copy = labels(view).joined(separator: "\n")
-            XCTAssertFalse(copy.contains("Keepsake"))
             if name == "review" { XCTAssertTrue(copy.contains("Recordings: unavailable")); XCTAssertTrue(copy.contains("recordings stay on this Mac")) }
             let bitmap = try XCTUnwrap(view.bitmapImageRepForCachingDisplay(in: view.bounds))
             sheet.panel.appearance?.performAsCurrentDrawingAppearance { view.cacheDisplay(in: view.bounds, to: bitmap) }

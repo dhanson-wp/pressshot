@@ -1,6 +1,6 @@
 import Cocoa
 
-/// Capture feedback, not a second library. All organization stays on Spacefast.
+/// Capture feedback, not a second library. Organization happens in the Library on the site.
 final class PressShotMarkupFooter: NSView {
     private let label = NSTextField(labelWithString: "Edits stay local until you click Save.")
     private let retry = NSButton(title: "Retry upload", target: nil, action: nil)

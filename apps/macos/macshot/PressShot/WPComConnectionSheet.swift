@@ -3,7 +3,7 @@ import Cocoa
 
 private final class WPComFlippedView: NSView { override var isFlipped: Bool { true } }
 
-/// Approved connection sheet. Credentials stay transient until Save destination.
+/// Connection sheet. Credentials stay transient until Save destination.
 @MainActor
 final class WPComConnectionSheet: NSObject, NSWindowDelegate, NSSearchFieldDelegate {
     enum Stage { case choice, waiting, loading, sites, review, failure }
