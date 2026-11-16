@@ -53,6 +53,7 @@ final class SettingsPortabilityTests: XCTestCase {
     func testUploadHistoryAndAccountEmailStayLocal() {
         XCTAssertFalse(SettingsPortability.isPortable("imgbbUploads"), "upload history includes delete URLs")
         XCTAssertFalse(SettingsPortability.isPortable("gdriveUserEmail"), "account email is PII")
+        XCTAssertFalse(SettingsPortability.isPortable("cloudupUsername"), "account name is PII")
     }
 
     // MARK: - System keys are filtered out
