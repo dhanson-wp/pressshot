@@ -1326,8 +1326,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, SPUUpdaterDelegate {
     /// capture — e.g. a stranded `pendingOCRMode` makes a later screenshot spawn
     /// an unexpected OCR window (issue #276). So each `begin*` checks this FIRST
     /// and only sets its flag when a capture will actually run. We must not clear
-    /// the flags inside `startCapture`'s `!isCapturing` guard, because during a
-    /// delay-capture countdown `isCapturing` is already true and the pending mode
+    /// the flags inside `startCapture`'s `!isCapturing` guard, because while a
+    /// capture is starting `isCapturing` is already true and the pending mode
     /// belongs to that accepted (not-yet-consumed) capture.
     var hasScreenRecordingPermission: Bool {
         PermissionOnboardingController.hasScreenRecordingPermission()
@@ -1393,97 +1393,14 @@ class AppDelegate: NSObject, NSApplicationDelegate, SPUUpdaterDelegate {
             for tc in thumbnailControllers { tc.hideWindow() }
         }
 
-        let delay = UserDefaults.standard.integer(forKey: "captureDelaySeconds")
-        trace?.mark("capture delay read delay=\(delay)")
-
-        // A recording counts down after "Start Recording" is clicked
-        // (overlayDidRequestStartRecording), once the area and options are
-        // chosen, so it skips the countdown that precedes a screenshot.
-        let isRecordingCapture = pendingRecordMode || pendingFullScreenRecord
-        if delay > 0 && !isRecordingCapture {
-            captureTimingTrace?.mark("showPreCaptureCountdown requested")
-            showPreCaptureCountdown(seconds: delay)
-            return
-        }
-
+        // The capture delay only applies to recordings. They count down after
+        // "Start Recording" is clicked (overlayDidRequestStartRecording), once
+        // the area and options are chosen. Screenshots capture right away.
         performCapture(fromMenu: fromMenu)
-    }
-
-    private func showPreCaptureCountdown(seconds: Int) {
-        // No display to show a countdown on (all asleep, or headless).
-        guard let screen = NSScreen.preferred else { return }
-        let size = CountdownView.preferredSize
-        let origin = NSPoint(
-            x: screen.frame.midX - size.width / 2,
-            y: screen.frame.midY - size.height / 2
-        )
-
-        let window = NSWindow(
-            contentRect: NSRect(origin: origin, size: size),
-            styleMask: [.borderless],
-            backing: .buffered,
-            defer: false
-        )
-        window.isOpaque = false
-        window.backgroundColor = .clear
-        window.level = .floating
-        window.hasShadow = false
-        window.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
-
-        let countdownView = CountdownView(seconds: seconds)
-        window.contentView = countdownView
-        NSApp.activate(ignoringOtherApps: true)
-        window.makeKeyAndOrderFront(nil)
-        delayCountdownWindow = window
-
-        // Listen for Escape to cancel countdown — use both local and global monitors
-        // Local catches keys when macshot is active; global catches when another app has focus
-        delayEscMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
-            if event.keyCode == 53 {
-                self?.cancelPreCaptureCountdown()
-                return nil
-            }
-            return event
-        }
-
-        var remaining = seconds
-        delayTimer?.invalidate()
-        delayTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] timer in
-            remaining -= 1
-            if remaining <= 0 {
-                timer.invalidate()
-                self?.delayTimer = nil
-                self?.delayCountdownWindow?.orderOut(nil)
-                self?.delayCountdownWindow = nil
-                self?.removeDelayEscMonitors()
-                self?.performCapture(fromMenu: false)
-            } else {
-                countdownView.tick(to: remaining)
-            }
-        }
     }
 
     private func removeDelayEscMonitors() {
         if let m = delayEscMonitor { NSEvent.removeMonitor(m); delayEscMonitor = nil }
-    }
-
-    private func cancelPreCaptureCountdown() {
-        delayTimer?.invalidate()
-        delayTimer = nil
-        delayCountdownWindow?.orderOut(nil)
-        delayCountdownWindow = nil
-        removeDelayEscMonitors()
-        isCapturing = false
-        pendingRecordMode = false
-        pendingFullScreen = false
-        pendingFullScreenRecord = false
-        pendingOCRMode = false
-        pendingTranslateOverlayMode = false
-        pendingTranslateOverlayLang = nil
-        pendingQuickCaptureMode = false
-        pendingPressShotMarkup = false
-        pendingScrollCaptureMode = false
-        pendingRestoreLastArea = false
     }
 
     private func performCapture(fromMenu: Bool) {
