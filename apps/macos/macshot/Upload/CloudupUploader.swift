@@ -111,7 +111,8 @@ final class CloudupUploader {
                 let name = try await fetchUsername(configuration, accessToken: access)
                 try checkAccount(generation)
                 defaults.set(name, forKey: "cloudupUsername")
-                NSApp.activate(ignoringOtherApps: true)
+                // Bring Settings back in front of the browser. There is no application when run headless.
+                NSApp?.activate(ignoringOtherApps: true)
                 NotificationCenter.default.post(name: Self.changed, object: nil)
                 completion(.success(name))
             } catch {
