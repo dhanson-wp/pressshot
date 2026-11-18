@@ -133,6 +133,14 @@ final class PressShotDeliveryCenter {
         return id
     }
 
+    /// Copy the primary link again, any time after the upload finished.
+    @discardableResult
+    func copyPrimaryLink(_ id: String) -> Bool {
+        guard let link = record(id)?.primaryLink else { return false }
+        copyLink(link)
+        return true
+    }
+
     func associateHistory(_ historyID: String, with id: String) {
         update(id) { $0.historyEntryID = historyID }
     }

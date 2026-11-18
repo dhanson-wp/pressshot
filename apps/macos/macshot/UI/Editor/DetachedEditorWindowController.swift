@@ -182,6 +182,10 @@ class DetachedEditorWindowController: NSObject, NSWindowDelegate {
         topBar.onDestinationSettings = { (NSApp.delegate as? AppDelegate)?.pressShotOpenDestinations() }
         let footer = PressShotMarkupFooter(frame: NSRect(x: 0, y: 0, width: winW, height: footerHeight))
         footer.autoresizingMask = [.width]
+        footer.onCopyLink = { [weak self] in
+            guard let self, let id = self.deliveryID else { return false }
+            return self.deliveryCenter.copyPrimaryLink(id)
+        }
         footer.onRetry = { [weak self] in
             guard let self, let id = self.deliveryID else { return }
             self.deliveryCenter.retry(id)
@@ -440,7 +444,8 @@ class DetachedEditorWindowController: NSObject, NSWindowDelegate {
     private func refreshDelivery() {
         guard let id = deliveryID, let record = deliveryCenter.record(id) else { return }
         deliveryFooter?.update(message: record.message,
-            canRetry: !record.isUploading && record.statuses.values.contains(.failed))
+            canRetry: !record.isUploading && record.statuses.values.contains(.failed),
+            canCopyLink: record.primaryLink != nil)
         topBar?.setSaving(record.isUploading || record.message == "Saving on this Mac…")
     }
 
