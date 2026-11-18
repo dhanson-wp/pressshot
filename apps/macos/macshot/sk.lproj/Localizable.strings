@@ -391,6 +391,11 @@
 "Cancel" = "Zrušiť";
 "Microphone Access Required" = "Vyžaduje sa prístup k mikrofónu";
 "macshot needs microphone permission to record voice audio. Open System Settings to grant access." = "macshot potrebuje povolenie mikrofónu na nahrávanie hlasového zvuku. Otvorte Nastavenia systému pre udelenie prístupu.";
+"Your microphone is off" = "Mikrofón je vypnutý";
+"This recording won't include your voice." = "Tento záznam nebude obsahovať váš hlas.";
+"Turn On Microphone" = "Zapnúť mikrofón";
+"Record Without Microphone" = "Nahrávať bez mikrofónu";
+"Don't ask again" = "Nabudúce sa nepýtať";
 "Upload to Google Drive?" = "Nahrať na Google Drive?";
 "Upload to S3?" = "Nahrať na S3?";
 "Upload to imgbb.com?" = "Nahrať na imgbb.com?";

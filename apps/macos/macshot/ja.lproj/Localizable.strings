@@ -373,6 +373,11 @@
 "Cancel" = "キャンセル";
 "Microphone Access Required" = "マイクのアクセスが必要です";
 "macshot needs microphone permission to record voice audio. Open System Settings to grant access." = "macshot が音声を録音するには、マイクの許可が必要です。システム設定を開いてアクセスを許可してください。";
+"Your microphone is off" = "マイクがオフです";
+"This recording won't include your voice." = "この録画にはあなたの声が含まれません。";
+"Turn On Microphone" = "マイクをオンにする";
+"Record Without Microphone" = "マイクなしで録画";
+"Don't ask again" = "今後表示しない";
 "Upload to Google Drive?" = "Google Drive にアップロードしますか?";
 "Upload to S3?" = "S3 にアップロードしますか?";
 "Upload to imgbb.com?" = "imgbb.com にアップロードしますか?";

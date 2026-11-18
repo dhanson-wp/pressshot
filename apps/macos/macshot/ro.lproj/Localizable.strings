@@ -384,6 +384,11 @@
 "Cancel" = "Anulează";
 "Microphone Access Required" = "Acces la microfon necesar";
 "macshot needs microphone permission to record voice audio. Open System Settings to grant access." = "macshot are nevoie de permisiunea microfonului pentru a înregistra audio vocal. Deschide Setările sistemului pentru a acorda acces.";
+"Your microphone is off" = "Microfonul este oprit";
+"This recording won't include your voice." = "Această înregistrare nu va include vocea ta.";
+"Turn On Microphone" = "Pornește microfonul";
+"Record Without Microphone" = "Înregistrează fără microfon";
+"Don't ask again" = "Nu mai întreba";
 "Upload to Google Drive?" = "Încarcă pe Google Drive?";
 "Upload to S3?" = "Încarcă pe S3?";
 "Upload to imgbb.com?" = "Încarcă pe imgbb.com?";

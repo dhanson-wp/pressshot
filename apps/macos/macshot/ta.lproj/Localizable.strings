@@ -389,6 +389,11 @@
 "Cancel" = "ரத்துசெய்";
 "Microphone Access Required" = "ஒலிவாங்கி அணுகல் தேவை";
 "macshot needs microphone permission to record voice audio. Open System Settings to grant access." = "macshot குரல் ஒலியைப் பதிவு செய்ய ஒலிவாங்கி அனுமதி தேவை. அணுகலை வழங்க கணினி அமைப்புகளைத் திறக்கவும்.";
+"Your microphone is off" = "உங்கள் மைக்ரோஃபோன் அணைக்கப்பட்டுள்ளது";
+"This recording won't include your voice." = "இந்தப் பதிவில் உங்கள் குரல் இருக்காது.";
+"Turn On Microphone" = "மைக்ரோஃபோனை இயக்கு";
+"Record Without Microphone" = "மைக்ரோஃபோன் இல்லாமல் பதிவு செய்";
+"Don't ask again" = "மீண்டும் கேட்க வேண்டாம்";
 "Upload to Google Drive?" = "Google Drive இல் பதிவேற்றவா?";
 "Upload to S3?" = "S3 இல் பதிவேற்றவா?";
 "Upload to imgbb.com?" = "imgbb.com இல் பதிவேற்றவா?";

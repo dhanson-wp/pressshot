@@ -391,6 +391,11 @@
 "Cancel" = "Odustani";
 "Microphone Access Required" = "Potreban pristup mikrofonu";
 "macshot needs microphone permission to record voice audio. Open System Settings to grant access." = "macshot treba dozvolu mikrofona za snimanje glasa. Otvorite Postavke sustava za odobravanje pristupa.";
+"Your microphone is off" = "Mikrofon je isključen";
+"This recording won't include your voice." = "Ova snimka neće sadržavati vaš glas.";
+"Turn On Microphone" = "Uključi mikrofon";
+"Record Without Microphone" = "Snimaj bez mikrofona";
+"Don't ask again" = "Ne pitaj ponovno";
 "Upload to Google Drive?" = "Učitaj na Google Drive?";
 "Upload to S3?" = "Učitaj na S3?";
 "Upload to imgbb.com?" = "Učitaj na imgbb.com?";

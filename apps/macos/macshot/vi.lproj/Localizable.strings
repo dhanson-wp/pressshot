@@ -390,6 +390,11 @@
 "Cancel" = "Hủy";
 "Microphone Access Required" = "Yêu cầu quyền Micro";
 "macshot needs microphone permission to record voice audio. Open System Settings to grant access." = "macshot cần quyền micro để ghi âm giọng nói. Mở Cài đặt hệ thống để cấp quyền.";
+"Your microphone is off" = "Micro của bạn đang tắt";
+"This recording won't include your voice." = "Bản ghi này sẽ không có giọng nói của bạn.";
+"Turn On Microphone" = "Bật micro";
+"Record Without Microphone" = "Ghi không có micro";
+"Don't ask again" = "Không hỏi lại";
 "Upload to Google Drive?" = "Tải lên Google Drive?";
 "Upload to S3?" = "Tải lên S3?";
 "Upload to imgbb.com?" = "Tải lên imgbb.com?";

@@ -381,6 +381,11 @@
 "Cancel" = "Cancelar";
 "Microphone Access Required" = "Se requiere acceso al micrófono";
 "macshot needs microphone permission to record voice audio. Open System Settings to grant access." = "macshot necesita permiso de micrófono para grabar audio de voz. Abre Ajustes del Sistema para conceder el acceso.";
+"Your microphone is off" = "Tu micrófono está desactivado";
+"This recording won't include your voice." = "Esta grabación no incluirá tu voz.";
+"Turn On Microphone" = "Activar micrófono";
+"Record Without Microphone" = "Grabar sin micrófono";
+"Don't ask again" = "No volver a preguntar";
 "Upload to Google Drive?" = "¿Subir a Google Drive?";
 "Upload to S3?" = "¿Subir a S3?";
 "Upload to imgbb.com?" = "¿Subir a imgbb.com?";

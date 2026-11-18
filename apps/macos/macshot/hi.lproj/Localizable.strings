@@ -391,6 +391,11 @@
 "Cancel" = "रद्द करें";
 "Microphone Access Required" = "माइक्रोफ़ोन पहुँच आवश्यक";
 "macshot needs microphone permission to record voice audio. Open System Settings to grant access." = "macshot को ध्वनि ऑडियो रिकॉर्ड करने के लिए माइक्रोफ़ोन अनुमति चाहिए। पहुँच प्रदान करने के लिए सिस्टम सेटिंग्स खोलें।";
+"Your microphone is off" = "आपका माइक्रोफ़ोन बंद है";
+"This recording won't include your voice." = "इस रिकॉर्डिंग में आपकी आवाज़ शामिल नहीं होगी।";
+"Turn On Microphone" = "माइक्रोफ़ोन चालू करें";
+"Record Without Microphone" = "माइक्रोफ़ोन के बिना रिकॉर्ड करें";
+"Don't ask again" = "फिर से न पूछें";
 "Upload to Google Drive?" = "Google Drive पर अपलोड करें?";
 "Upload to S3?" = "S3 पर अपलोड करें?";
 "Upload to imgbb.com?" = "imgbb.com पर अपलोड करें?";

@@ -8454,6 +8454,8 @@ class OverlayView: NSView {
             // Enter recording mode — shows recording setup toolbar
             overlayDelegate?.overlayViewDidRequestEnterRecordingMode()
         case .startRecord:
+            // A take without the microphone has no voice; say so before it starts.
+            if MicrophoneOffWarning.shouldWarn() && !confirmRecordingWithoutMicrophone() { break }
             // Start recording — overlay will be dismissed by AppDelegate
             overlayDelegate?.overlayViewDidRequestStartRecording(rect: selectionRect)
         case .stopRecord:
@@ -9050,6 +9052,32 @@ class OverlayView: NSView {
         @unknown default:
             break
         }
+    }
+
+    /// Returns true to record without the microphone. "Turn On Microphone"
+    /// turns it on and stays in recording setup, so the level can be checked.
+    private func confirmRecordingWithoutMicrophone() -> Bool {
+        let alert = NSAlert()
+        alert.messageText = L("Your microphone is off")
+        alert.informativeText = L("This recording won't include your voice.")
+        alert.alertStyle = .warning
+        alert.addButton(withTitle: L("Turn On Microphone"))
+        alert.addButton(withTitle: L("Record Without Microphone"))
+        alert.showsSuppressionButton = true
+        alert.suppressionButton?.title = L("Don't ask again")
+
+        // Lower the overlay so the alert isn't hidden behind it.
+        let savedLevel = window?.level
+        window?.level = .normal
+        let response = alert.runModal()
+        if let saved = savedLevel { window?.level = saved }
+
+        if alert.suppressionButton?.state == .on {
+            UserDefaults.standard.set(true, forKey: MicrophoneOffWarning.suppressedKey)
+        }
+        guard response == .alertFirstButtonReturn else { return true }
+        toggleMicAudio()
+        return false
     }
 
     private func showMicPermissionAlert() {

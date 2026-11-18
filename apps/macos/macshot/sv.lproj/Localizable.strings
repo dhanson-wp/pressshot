@@ -389,6 +389,11 @@
 "Cancel" = "Avbryt";
 "Microphone Access Required" = "Mikrofon\U00E5tkomst kr\U00E4vs";
 "macshot needs microphone permission to record voice audio. Open System Settings to grant access." = "macshot beh\U00F6ver mikrofonbeh\U00F6righet f\U00F6r att spela in r\U00F6stljud. \U00D6ppna Systeminst\U00E4llningar f\U00F6r att ge \U00E5tkomst.";
+"Your microphone is off" = "Mikrofonen är avstängd";
+"This recording won't include your voice." = "Den här inspelningen kommer inte att innehålla din röst.";
+"Turn On Microphone" = "Slå på mikrofonen";
+"Record Without Microphone" = "Spela in utan mikrofon";
+"Don't ask again" = "Fråga inte igen";
 "Upload to Google Drive?" = "Ladda upp till Google Drive?";
 "Upload to S3?" = "Ladda upp till S3?";
 "Upload to imgbb.com?" = "Ladda upp till imgbb.com?";

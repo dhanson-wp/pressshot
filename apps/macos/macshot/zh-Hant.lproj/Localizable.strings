@@ -390,6 +390,11 @@
 "Cancel" = "取消";
 "Microphone Access Required" = "需要麥克風權限";
 "macshot needs microphone permission to record voice audio. Open System Settings to grant access." = "macshot 需要麥克風權限才能錄製語音。請打開系統設定以授予權限。";
+"Your microphone is off" = "麥克風已關閉";
+"This recording won't include your voice." = "此錄製將不會包含你的聲音。";
+"Turn On Microphone" = "開啟麥克風";
+"Record Without Microphone" = "不使用麥克風錄製";
+"Don't ask again" = "不再詢問";
 "Upload to Google Drive?" = "上傳至 Google Drive？";
 "Upload to S3?" = "上傳至 S3？";
 "Upload to imgbb.com?" = "上傳至 imgbb.com？";

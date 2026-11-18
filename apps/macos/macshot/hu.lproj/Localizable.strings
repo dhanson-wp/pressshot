@@ -390,6 +390,11 @@
 "Cancel" = "Mégse";
 "Microphone Access Required" = "Mikrofon hozzáférés szükséges";
 "macshot needs microphone permission to record voice audio. Open System Settings to grant access." = "A macshot-nak mikrofon engedélyre van szüksége a hangfelvételhez. Nyisd meg a Rendszerbeállításokat a hozzáférés megadásához.";
+"Your microphone is off" = "A mikrofon ki van kapcsolva";
+"This recording won't include your voice." = "Ez a felvétel nem fogja tartalmazni a hangodat.";
+"Turn On Microphone" = "Mikrofon bekapcsolása";
+"Record Without Microphone" = "Felvétel mikrofon nélkül";
+"Don't ask again" = "Ne kérdezze újra";
 "Upload to Google Drive?" = "Feltöltés a Google Drive-ra?";
 "Upload to S3?" = "Feltöltés az S3-ra?";
 "Upload to imgbb.com?" = "Feltöltés az imgbb.com-ra?";
