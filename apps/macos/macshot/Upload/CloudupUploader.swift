@@ -27,10 +27,15 @@ final class CloudupUploader {
         static let redirectURI = "http://127.0.0.1:52634/callback"
         static let callbackPort: UInt16 = 52634
 
-        /// The build's Cloudup app, or nil when it has none. `PRESSSHOT_CLOUDUP_*` environment
-        /// variables point a development run at another Cloudup server and its own app.
+        /// The build's Cloudup app, or nil when it has none. In Debug builds, `PRESSSHOT_CLOUDUP_*`
+        /// environment variables point a development run at another Cloudup server and its own app.
+        /// Release builds ignore them, so nothing outside the app can redirect sign-in or uploads.
         static var bundled: Configuration? {
+            #if DEBUG
             let environment = ProcessInfo.processInfo.environment
+            #else
+            let environment: [String: String] = [:]
+            #endif
             func value(_ variable: String, _ infoKey: String) -> String {
                 let text = environment[variable] ?? Bundle.main.object(forInfoDictionaryKey: infoKey) as? String ?? ""
                 return text.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -179,6 +184,16 @@ final class CloudupUploader {
         }
     }
 
+    /// Presigned upload addresses must be HTTPS. Debug builds also accept a local mock server.
+    static func allowsStorage(_ url: URL) -> Bool {
+        if url.scheme == "https" { return true }
+        #if DEBUG
+        return url.host == "127.0.0.1"
+        #else
+        return false
+        #endif
+    }
+
     static func isRebuiltCloudup(status: Int, body: Data) -> Bool {
         guard status == 401, let json = try? JSONSerialization.jsonObject(with: body) as? [String: Any] else { return false }
         return json["error"] as? String == "access_denied"
@@ -242,7 +257,7 @@ final class CloudupUploader {
                 "filename": filename, "mime": mimeType, "size": body.byteCount, "stream_id": streamID, "title": title,
             ], generation: generation)
             guard let itemID = item["id"] as? String, !itemID.isEmpty,
-                  let storage = (item["s3_url"] as? String).flatMap(URL.init(string:)), storage.scheme == "https" || storage.host == "127.0.0.1" else {
+                  let storage = (item["s3_url"] as? String).flatMap(URL.init(string:)), Self.allowsStorage(storage) else {
                 throw Self.error("Cloudup didn't say where to upload the file")
             }
             try await put(body, to: storage, mimeType: mimeType, generation: generation, progress: progress)
