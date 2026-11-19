@@ -389,6 +389,11 @@
 "Cancel" = "Peruuta";
 "Microphone Access Required" = "Mikrofonin käyttöoikeus vaaditaan";
 "macshot needs microphone permission to record voice audio. Open System Settings to grant access." = "macshot tarvitsee mikrofonin käyttöoikeuden äänittääkseen puhetta. Avaa järjestelmän asetukset myöntääksesi käyttöoikeuden.";
+"Your microphone is off" = "Mikrofonisi on pois päältä";
+"This recording won't include your voice." = "Tämä tallenne ei sisällä ääntäsi.";
+"Turn On Microphone" = "Laita mikrofoni päälle";
+"Record Without Microphone" = "Tallenna ilman mikrofonia";
+"Don't ask again" = "Älä kysy uudelleen";
 "Upload to Google Drive?" = "Ladataanko Google Driveen?";
 "Upload to S3?" = "Ladataanko S3:een?";
 "Upload to imgbb.com?" = "Ladataanko imgbb.com-palveluun?";

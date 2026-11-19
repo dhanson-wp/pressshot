@@ -380,6 +380,11 @@
 "Cancel" = "Annuleer";
 "Microphone Access Required" = "Microfoontoegang vereist";
 "macshot needs microphone permission to record voice audio. Open System Settings to grant access." = "macshot heeft microfoontoestemming nodig om spraak op te nemen. Open Systeeminstellingen om toegang te verlenen.";
+"Your microphone is off" = "Je microfoon staat uit";
+"This recording won't include your voice." = "Deze opname bevat je stem niet.";
+"Turn On Microphone" = "Microfoon aanzetten";
+"Record Without Microphone" = "Opnemen zonder microfoon";
+"Don't ask again" = "Niet meer vragen";
 "Upload to Google Drive?" = "Uploaden naar Google Drive?";
 "Upload to S3?" = "Uploaden naar S3?";
 "Upload to imgbb.com?" = "Uploaden naar imgbb.com?";

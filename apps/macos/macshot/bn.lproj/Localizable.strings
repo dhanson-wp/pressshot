@@ -388,6 +388,11 @@
 "Cancel" = "বাতিল";
 "Microphone Access Required" = "মাইক্রোফোন অ্যাক্সেস প্রয়োজন";
 "macshot needs microphone permission to record voice audio. Open System Settings to grant access." = "ভয়েস অডিও রেকর্ড করতে macshot-এর মাইক্রোফোন অনুমতি প্রয়োজন। অ্যাক্সেস দিতে সিস্টেম সেটিংস খুলুন।";
+"Your microphone is off" = "আপনার মাইক্রোফোন বন্ধ";
+"This recording won't include your voice." = "এই রেকর্ডিংয়ে আপনার কণ্ঠ থাকবে না।";
+"Turn On Microphone" = "মাইক্রোফোন চালু করুন";
+"Record Without Microphone" = "মাইক্রোফোন ছাড়া রেকর্ড করুন";
+"Don't ask again" = "আর জিজ্ঞাসা করবেন না";
 "Upload to Google Drive?" = "Google Drive-এ আপলোড করবেন?";
 "Upload to S3?" = "S3-তে আপলোড করবেন?";
 "Upload to imgbb.com?" = "imgbb.com-এ আপলোড করবেন?";

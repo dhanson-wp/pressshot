@@ -384,6 +384,11 @@
 "Cancel" = "لغو";
 "Microphone Access Required" = "دسترسی به میکروفون لازم است";
 "macshot needs microphone permission to record voice audio. Open System Settings to grant access." = "macshot برای ضبط صدای میکروفون به مجوز میکروفون نیاز دارد. تنظیمات سیستم را باز کنید تا دسترسی اعطا شود.";
+"Your microphone is off" = "میکروفون شما خاموش است";
+"This recording won't include your voice." = "این ضبط صدای شما را شامل نمی‌شود.";
+"Turn On Microphone" = "روشن کردن میکروفون";
+"Record Without Microphone" = "ضبط بدون میکروفون";
+"Don't ask again" = "دیگر نپرس";
 "Upload to Google Drive?" = "بارگذاری به Google Drive؟";
 "Upload to S3?" = "بارگذاری به S3؟";
 "Upload to imgbb.com?" = "بارگذاری به imgbb.com؟";

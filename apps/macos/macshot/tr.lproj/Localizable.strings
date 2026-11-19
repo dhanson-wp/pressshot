@@ -384,6 +384,11 @@
 "Cancel" = "İptal";
 "Microphone Access Required" = "Mikrofon Erişimi Gerekli";
 "macshot needs microphone permission to record voice audio. Open System Settings to grant access." = "macshot, ses kaydetmek için mikrofon iznine ihtiyaç duyar. İzin vermek için Sistem Ayarları'nı açın.";
+"Your microphone is off" = "Mikrofonunuz kapalı";
+"This recording won't include your voice." = "Bu kayıt sesinizi içermeyecek.";
+"Turn On Microphone" = "Mikrofonu Aç";
+"Record Without Microphone" = "Mikrofonsuz Kaydet";
+"Don't ask again" = "Bir daha sorma";
 "Upload to Google Drive?" = "Google Drive'a yüklensin mi?";
 "Upload to S3?" = "S3'e yüklensin mi?";
 "Upload to imgbb.com?" = "imgbb.com'a yüklensin mi?";

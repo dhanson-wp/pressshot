@@ -399,6 +399,11 @@
 "Cancel" = "Cancel";
 "Microphone Access Required" = "Microphone Access Required";
 "macshot needs microphone permission to record voice audio. Open System Settings to grant access." = "macshot needs microphone permission to record voice audio. Open System Settings to grant access.";
+"Your microphone is off" = "Your microphone is off";
+"This recording won't include your voice." = "This recording won't include your voice.";
+"Turn On Microphone" = "Turn On Microphone";
+"Record Without Microphone" = "Record Without Microphone";
+"Don't ask again" = "Don't ask again";
 "Upload to Google Drive?" = "Upload to Google Drive?";
 "Upload to S3?" = "Upload to S3?";
 "Upload to imgbb.com?" = "Upload to imgbb.com?";

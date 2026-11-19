@@ -391,6 +391,11 @@
 "Cancel" = "Скасувати";
 "Microphone Access Required" = "Потрібен доступ до мікрофона";
 "macshot needs microphone permission to record voice audio. Open System Settings to grant access." = "macshot потребує дозволу мікрофона для запису голосового аудіо. Відкрийте Системні параметри, щоб надати доступ.";
+"Your microphone is off" = "Мікрофон вимкнено";
+"This recording won't include your voice." = "Цей запис не міститиме вашого голосу.";
+"Turn On Microphone" = "Увімкнути мікрофон";
+"Record Without Microphone" = "Записати без мікрофона";
+"Don't ask again" = "Більше не питати";
 "Upload to Google Drive?" = "Завантажити на Google Drive?";
 "Upload to S3?" = "Завантажити на S3?";
 "Upload to imgbb.com?" = "Завантажити на imgbb.com?";

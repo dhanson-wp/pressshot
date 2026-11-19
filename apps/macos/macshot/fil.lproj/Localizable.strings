@@ -391,6 +391,11 @@
 "Cancel" = "Kanselahin";
 "Microphone Access Required" = "Kinakailangan ang Access sa Mikropono";
 "macshot needs microphone permission to record voice audio. Open System Settings to grant access." = "Kailangan ng macshot ang microphone permission upang mag-record ng boses. Buksan ang System Settings upang bigyan ng access.";
+"Your microphone is off" = "Naka-off ang mikropono mo";
+"This recording won't include your voice." = "Hindi maisasama ang boses mo sa recording na ito.";
+"Turn On Microphone" = "I-on ang Mikropono";
+"Record Without Microphone" = "Mag-record nang Walang Mikropono";
+"Don't ask again" = "Huwag nang itanong muli";
 "Upload to Google Drive?" = "I-upload sa Google Drive?";
 "Upload to S3?" = "I-upload sa S3?";
 "Upload to imgbb.com?" = "I-upload sa imgbb.com?";

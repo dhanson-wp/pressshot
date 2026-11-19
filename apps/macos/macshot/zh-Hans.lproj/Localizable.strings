@@ -373,6 +373,11 @@
 "Cancel" = "取消";
 "Microphone Access Required" = "需要麦克风权限";
 "macshot needs microphone permission to record voice audio. Open System Settings to grant access." = "macshot 需要麦克风权限来录制语音。请打开系统设置以授予权限。";
+"Your microphone is off" = "麦克风已关闭";
+"This recording won't include your voice." = "此录制将不包含你的声音。";
+"Turn On Microphone" = "打开麦克风";
+"Record Without Microphone" = "不使用麦克风录制";
+"Don't ask again" = "不再询问";
 "Upload to Google Drive?" = "上传到 Google Drive？";
 "Upload to S3?" = "上传到 S3？";
 "Upload to imgbb.com?" = "上传到 imgbb.com？";

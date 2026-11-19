@@ -391,6 +391,11 @@
 "Cancel" = "Ακύρωση";
 "Microphone Access Required" = "Απαιτείται πρόσβαση μικροφώνου";
 "macshot needs microphone permission to record voice audio. Open System Settings to grant access." = "Το macshot χρειάζεται άδεια μικροφώνου για εγγραφή φωνητικού ήχου. Ανοίξτε τις Ρυθμίσεις συστήματος για παραχώρηση πρόσβασης.";
+"Your microphone is off" = "Το μικρόφωνό σας είναι απενεργοποιημένο";
+"This recording won't include your voice." = "Αυτή η εγγραφή δεν θα περιλαμβάνει τη φωνή σας.";
+"Turn On Microphone" = "Ενεργοποίηση μικροφώνου";
+"Record Without Microphone" = "Εγγραφή χωρίς μικρόφωνο";
+"Don't ask again" = "Να μην ερωτηθώ ξανά";
 "Upload to Google Drive?" = "Μεταφόρτωση στο Google Drive;";
 "Upload to S3?" = "Μεταφόρτωση στο S3;";
 "Upload to imgbb.com?" = "Μεταφόρτωση στο imgbb.com;";

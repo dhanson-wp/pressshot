@@ -373,6 +373,11 @@
 "Cancel" = "취소";
 "Microphone Access Required" = "마이크 접근 권한 필요";
 "macshot needs microphone permission to record voice audio. Open System Settings to grant access." = "macshot이 음성을 녹음하려면 마이크 권한이 필요합니다. 시스템 설정을 열어 권한을 허용하세요.";
+"Your microphone is off" = "마이크가 꺼져 있습니다";
+"This recording won't include your voice." = "이 녹화에는 음성이 포함되지 않습니다.";
+"Turn On Microphone" = "마이크 켜기";
+"Record Without Microphone" = "마이크 없이 녹화";
+"Don't ask again" = "다시 묻지 않기";
 "Upload to Google Drive?" = "Google Drive에 업로드하시겠습니까?";
 "Upload to S3?" = "S3에 업로드하시겠습니까?";
 "Upload to imgbb.com?" = "imgbb.com에 업로드하시겠습니까?";
