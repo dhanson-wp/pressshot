@@ -1,6 +1,7 @@
 #if !OFFLINE
 import Cocoa
 import CryptoKit
+import Network
 import XCTest
 
 private final class UploadFixtureProtocol: URLProtocol, @unchecked Sendable {
@@ -347,6 +348,233 @@ final class UploadRequestTests: XCTestCase {
             DispatchQueue.main.async { continuation.resume() }
         }
         XCTAssertFalse(delivered)
+    }
+}
+
+// MARK: - Cloudup
+
+extension UploadRequestTests {
+    private static let cloudupConfiguration = CloudupUploader.Configuration(
+        api: URL(string: "https://api.cloudup.example")!, auth: URL(string: "https://auth.cloudup.example")!,
+        clientID: "pressshot", clientSecret: "fixture secret+&=")
+
+    private func cloudup(expired: Bool = false) throws -> (CloudupUploader, URL) {
+        let tokens = directory.appendingPathComponent("cloudup-tokens.json")
+        try JSONSerialization.data(withJSONObject: ["accessToken": "fixture-access", "refreshToken": "refresh+a&b=c",
+            "expiry": Date().timeIntervalSince1970 + (expired ? -60 : 3600)]).write(to: tokens)
+        return (CloudupUploader(configuration: Self.cloudupConfiguration, session: session, tokenFileURL: tokens,
+                                defaults: defaults, retryDelayNanoseconds: 0), tokens)
+    }
+    private func upload(_ uploader: CloudupUploader, _ payload: UploadPayload, name: String = "clip one.mp4") async throws -> String {
+        defer { withExtendedLifetime(uploader) {} }
+        return try await withCheckedThrowingContinuation { continuation in
+            uploader.upload(payload: payload, filename: name, mimeType: "video/mp4") { continuation.resume(with: $0) }
+        }
+    }
+    private static func json(_ object: [String: Any], status: Int = 200) -> UploadFixtureProtocol.Reply {
+        .init(status: status, body: try! JSONSerialization.data(withJSONObject: object))
+    }
+    private static func fields(_ body: Data) -> [String: Any] {
+        (try? JSONSerialization.jsonObject(with: body)) as? [String: Any] ?? [:]
+    }
+
+    func testCloudupCreatesAStreamPutsTheFileThenCompletesTheItem() async throws {
+        let data = Data("owned cloudup bytes".utf8)
+        let lock = NSLock()
+        var calls: [String] = []
+        respond { request, body in
+            let call = "\(request.httpMethod ?? "") \(request.url!.absoluteString)"
+            lock.lock(); calls.append(call); lock.unlock()
+            switch call {
+            case "POST https://api.cloudup.example/streams":
+                XCTAssertEqual(request.value(forHTTPHeaderField: "Authorization"), "Bearer fixture-access")
+                XCTAssertEqual(Self.fields(body)["title"] as? String, "clip one")
+                return Self.json(["id": "cStream"], status: 201)
+            case "POST https://api.cloudup.example/items":
+                let sent = Self.fields(body)
+                XCTAssertEqual(sent["filename"] as? String, "clip one.mp4")
+                XCTAssertEqual(sent["stream_id"] as? String, "cStream")
+                XCTAssertEqual(sent["mime"] as? String, "video/mp4")
+                XCTAssertEqual(sent["size"] as? Int, data.count)
+                return Self.json(["id": "iItem", "url": "https://cloudup.example/iItem",
+                                  "s3_url": "https://storage.example/bucket/key.mp4?X-Amz-Signature=abc"])
+            case "PUT https://storage.example/bucket/key.mp4?X-Amz-Signature=abc":
+                // The presigned address carries its own authorization, and storage refuses
+                // x-amz-* headers that were not signed.
+                XCTAssertEqual(body, data)
+                XCTAssertNil(request.value(forHTTPHeaderField: "Authorization"))
+                XCTAssertEqual(request.value(forHTTPHeaderField: "Content-Type"), "video/mp4")
+                XCTAssertTrue((request.allHTTPHeaderFields ?? [:]).keys.allSatisfy { !$0.lowercased().hasPrefix("x-amz-") })
+                return .init(status: 200, body: Data())
+            case "PATCH https://api.cloudup.example/items/iItem":
+                XCTAssertEqual(Self.fields(body)["complete"] as? Bool, true)
+                return Self.json(["id": "iItem", "url": "https://cloudup.example/iItem"])
+            default:
+                XCTFail("Unexpected request: \(call)")
+                return .init(status: 500, body: Data())
+            }
+        }
+        let link = try await upload(try cloudup().0, .data(data))
+        XCTAssertEqual(link, "https://cloudup.example/iItem")
+        lock.lock(); let made = calls; lock.unlock()
+        XCTAssertEqual(made.map { $0.components(separatedBy: " ").first }, ["POST", "POST", "PUT", "PATCH"])
+        await MediaExportCoordinator.shared.waitUntilIdle()
+    }
+
+    func testCloudupRenewsARefusedTokenOnceAndKeepsTheReplacementRefreshToken() async throws {
+        let lock = NSLock()
+        var streamAttempts = 0
+        var renewals = 0
+        respond { request, body in
+            switch "\(request.httpMethod ?? "") \(request.url!.absoluteString)" {
+            case "POST https://api.cloudup.example/streams":
+                lock.lock(); streamAttempts += 1; let attempt = streamAttempts; lock.unlock()
+                if attempt == 1 { return Self.json(["error": "access_denied"], status: 401) }
+                XCTAssertEqual(request.value(forHTTPHeaderField: "Authorization"), "Bearer renewed-access")
+                return Self.json(["id": "cStream"])
+            case "POST https://auth.cloudup.example/oauth/token":
+                lock.lock(); renewals += 1; lock.unlock()
+                // Reserved characters in the stored token and the secret must survive form encoding.
+                XCTAssertEqual(String(decoding: body, as: UTF8.self),
+                               "client_id=pressshot&client_secret=fixture%20secret%2B%26%3D&grant_type=refresh_token&refresh_token=refresh%2Ba%26b%3Dc")
+                return Self.json(["access_token": "renewed-access", "refresh_token": "replacement-refresh", "expires_in": 21600])
+            case "POST https://api.cloudup.example/items":
+                return Self.json(["id": "iItem", "url": "https://cloudup.example/iItem", "s3_url": "https://storage.example/k"])
+            case "PUT https://storage.example/k": return .init(status: 200, body: Data())
+            case "PATCH https://api.cloudup.example/items/iItem": return Self.json(["url": "https://cloudup.example/iItem"])
+            default: return .init(status: 500, body: Data())
+            }
+        }
+        let (uploader, tokens) = try cloudup()
+        _ = try await upload(uploader, .data(Data("x".utf8)))
+        lock.lock(); let (attempts, renewed) = (streamAttempts, renewals); lock.unlock()
+        XCTAssertEqual(attempts, 2)
+        XCTAssertEqual(renewed, 1)
+        // Cloudup replaces the refresh token on each use; losing the new one signs the account out.
+        let saved = try XCTUnwrap(JSONSerialization.jsonObject(with: Data(contentsOf: tokens)) as? [String: Any])
+        XCTAssertEqual(saved["refreshToken"] as? String, "replacement-refresh")
+        XCTAssertEqual(saved["accessToken"] as? String, "renewed-access")
+        await MediaExportCoordinator.shared.waitUntilIdle()
+    }
+
+    func testCloudupRenewsAnExpiredTokenBeforeTheFirstRequest() async throws {
+        let lock = NSLock()
+        var calls: [String] = []
+        respond { request, _ in
+            let call = "\(request.httpMethod ?? "") \(request.url!.path)"
+            lock.lock(); calls.append(call); lock.unlock()
+            switch call {
+            case "POST /oauth/token": return Self.json(["access_token": "renewed-access", "expires_in": 21600])
+            case "POST /streams":
+                XCTAssertEqual(request.value(forHTTPHeaderField: "Authorization"), "Bearer renewed-access")
+                return Self.json(["id": "cStream"])
+            case "POST /items": return Self.json(["id": "iItem", "s3_url": "https://storage.example/k"])
+            case "PUT /k": return .init(status: 200, body: Data())
+            default: return Self.json(["url": "https://cloudup.example/iItem"])
+            }
+        }
+        let (uploader, tokens) = try cloudup(expired: true)
+        _ = try await upload(uploader, .data(Data("x".utf8)))
+        lock.lock(); let made = calls; lock.unlock()
+        XCTAssertEqual(made.first, "POST /oauth/token")
+        // A renewal that sends no new refresh token keeps the one in use.
+        let saved = try XCTUnwrap(JSONSerialization.jsonObject(with: Data(contentsOf: tokens)) as? [String: Any])
+        XCTAssertEqual(saved["refreshToken"] as? String, "refresh+a&b=c")
+        await MediaExportCoordinator.shared.waitUntilIdle()
+    }
+
+    func testCloudupRemovesTheStreamWhenStorageRefusesTheFile() async throws {
+        let lock = NSLock()
+        var calls: [String] = []
+        respond { request, _ in
+            let call = "\(request.httpMethod ?? "") \(request.url!.path)"
+            lock.lock(); calls.append(call); lock.unlock()
+            switch call {
+            case "POST /streams": return Self.json(["id": "cStream"])
+            case "POST /items": return Self.json(["id": "iItem", "s3_url": "https://storage.example/k"])
+            case "PUT /k": return .init(status: 403, body: Data("<Error><Code>AccessDenied</Code></Error>".utf8))
+            default: return Self.json([:])
+            }
+        }
+        do {
+            _ = try await upload(try cloudup().0, .data(Data("x".utf8)))
+            XCTFail("A refused file must fail the upload")
+        } catch {
+            XCTAssertTrue(error.localizedDescription.contains("HTTP 403"), error.localizedDescription)
+            XCTAssertFalse(error.localizedDescription.contains("<Error>"), "storage's XML is not shown to people")
+        }
+        lock.lock(); let made = calls; lock.unlock()
+        XCTAssertEqual(made, ["POST /streams", "POST /items", "PUT /k", "DELETE /streams/cStream"])
+        XCTAssertFalse(made.contains("PATCH /items/iItem"), "an item whose file never arrived is not completed")
+        await MediaExportCoordinator.shared.waitUntilIdle()
+    }
+
+    func testCloudupWithoutAnAppOffersNoSignIn() throws {
+        let uploader = CloudupUploader(configuration: nil, session: session,
+                                       tokenFileURL: directory.appendingPathComponent("none.json"), defaults: defaults)
+        XCTAssertFalse(uploader.isConfigured)
+        XCTAssertFalse(uploader.isSignedIn)
+        XCTAssertTrue(try cloudup().0.isSignedIn)
+    }
+
+    func testCloudupSignInAddressesAndPKCE() {
+        // The sign-in server is the API host's "auth." sibling; other hosts sign in where their API is.
+        XCTAssertEqual(CloudupUploader.Configuration.authServer(for: URL(string: "https://api.cloudup.com")!).absoluteString, "https://auth.cloudup.com")
+        XCTAssertEqual(CloudupUploader.Configuration.authServer(for: URL(string: "http://127.0.0.1:8765/new")!).absoluteString, "http://127.0.0.1:8765/new")
+        // RFC 7636, appendix B.
+        XCTAssertEqual(CloudupUploader.challenge(for: "dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk"), "E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM")
+        let url = CloudupUploader.authorizationURL(configuration: Self.cloudupConfiguration, state: "s t", challenge: "abc")
+        let items = Dictionary(uniqueKeysWithValues: (URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems ?? []).map { ($0.name, $0.value ?? "") })
+        XCTAssertEqual(url.host, "auth.cloudup.example")
+        XCTAssertEqual(url.path, "/auth")
+        XCTAssertEqual(items["client_id"], "pressshot")
+        XCTAssertEqual(items["redirect_uri"], "http://127.0.0.1:52634/callback")
+        XCTAssertEqual(items["code_challenge"], "abc")
+        XCTAssertEqual(items["code_challenge_method"], "S256")
+        XCTAssertEqual(items["state"], "s t")
+        XCTAssertNil(items["scope"])
+    }
+
+    func testOnlyTheRebuiltCloudupOffersThisSignIn() {
+        let denied = Data(#"{"error":"access_denied","hint":"Missing \"Authorization\" header"}"#.utf8)
+        XCTAssertTrue(CloudupUploader.isRebuiltCloudup(status: 401, body: denied))
+        XCTAssertFalse(CloudupUploader.isRebuiltCloudup(status: 401, body: Data("invalid credentials".utf8)))
+        XCTAssertFalse(CloudupUploader.isRebuiltCloudup(status: 200, body: denied))
+        XCTAssertFalse(CloudupUploader.isRebuiltCloudup(status: 502, body: Data("<html>".utf8)))
+    }
+
+    func testCloudupLoopbackTakesOnlyThisSignInsCallback() async throws {
+        let port = UInt16.random(in: 53000...59000)
+        let loopback = CloudupLoopback(port: port, state: "expected-state")
+        @MainActor func request(_ target: String, host: String? = nil) async throws -> String {
+            let connection = NWConnection(host: "127.0.0.1", port: NWEndpoint.Port(rawValue: port)!, using: .tcp)
+            defer { connection.cancel() }
+            connection.start(queue: .main)
+            let text = "GET \(target) HTTP/1.1\r\nHost: \(host ?? "127.0.0.1:\(port)")\r\n\r\n"
+            return try await withCheckedThrowingContinuation { continuation in
+                connection.send(content: Data(text.utf8), completion: .contentProcessed { error in
+                    if let error { continuation.resume(throwing: error); return }
+                    connection.receive(minimumIncompleteLength: 1, maximumLength: 8192) { data, _, _, error in
+                        if let error { continuation.resume(throwing: error) }
+                        else { continuation.resume(returning: String(decoding: data ?? Data(), as: UTF8.self)) }
+                    }
+                })
+            }
+        }
+        let ready = expectation(description: "listening")
+        async let code = loopback.waitForCode(timeoutSeconds: 20) { ready.fulfill() }
+        await fulfillment(of: [ready], timeout: 10)
+        // None of these came from our sign-in, so none may finish or cancel it.
+        let wrongPath = try await request("/other?code=stolen&state=expected-state")
+        XCTAssertTrue(wrongPath.hasPrefix("HTTP/1.1 404"), wrongPath)
+        let wrongState = try await request("/callback?code=stolen&state=someone-elses")
+        XCTAssertTrue(wrongState.hasPrefix("HTTP/1.1 400"), wrongState)
+        let wrongHost = try await request("/callback?code=stolen&state=expected-state", host: "evil.example")
+        XCTAssertTrue(wrongHost.hasPrefix("HTTP/1.1 404"), wrongHost)
+        let accepted = try await request("/callback?code=the-code&state=expected-state")
+        XCTAssertTrue(accepted.hasPrefix("HTTP/1.1 200"), accepted)
+        let received = try await code
+        XCTAssertEqual(received, "the-code")
     }
 }
 #endif

@@ -33,6 +33,13 @@ macshot integrates with the following optional third-party services. Use of thes
 - **Authentication:** OAuth 2.0. You sign in via Google's login page in your browser. macshot stores a refresh token locally (see above) to avoid repeated sign-ins.
 - **Revoking access:** You can sign out in macshot Preferences, or revoke access at any time from [Google Account Permissions](https://myaccount.google.com/permissions).
 
+### Cloudup
+- **Purpose:** Upload screenshots and recordings to your own Cloudup account and get an unlisted share link.
+- **Data sent:** The image or video file you choose to upload, plus its filename and title.
+- **Authentication:** OAuth 2.0. You sign in on Cloudup's page in your browser. PressShot never sees your password. It stores access and refresh tokens in `~/Library/Application Support/com.derekhanson.pressshot/cloudup_tokens.json` with owner-only permissions (0600).
+- **Links:** Each upload gets its own link. Anyone with the link can open it.
+- **Revoking access:** Disconnect Cloudup in Settings → Upload destinations.
+
 ### imgbb
 - **Purpose:** Upload screenshots to imgbb for shareable image links.
 - **Data sent:** The image file you choose to upload.

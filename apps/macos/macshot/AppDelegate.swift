@@ -2232,7 +2232,25 @@ class AppDelegate: NSObject, NSApplicationDelegate, SPUUpdaterDelegate {
             return
         }
 
-        if provider == "gdrive" {
+        if provider == CloudupUploader.providerID {
+            guard CloudupUploader.shared.isSignedIn else {
+                toast.showError(message: "Cloudup not signed in. Check Settings.")
+                return
+            }
+            CloudupUploader.shared.uploadImage(image, progress: { fraction in
+                toast.updateProgress(fraction)
+            }) { result in
+                switch result {
+                case .success(let link):
+                    let pasteboard = NSPasteboard.general
+                    pasteboard.clearContents()
+                    pasteboard.setString(link, forType: .string)
+                    toast.showSuccess(link: link, deleteURL: "")
+                case .failure(let error):
+                    toast.showError(message: error.localizedDescription)
+                }
+            }
+        } else if provider == "gdrive" {
             GoogleDriveUploader.shared.uploadImage(image) { result in
                 switch result {
                 case .success(let link):

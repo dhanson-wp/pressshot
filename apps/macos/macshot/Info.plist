@@ -4,6 +4,10 @@
 <dict>
 	<key>PressShotAuthServiceURL</key>
 	<string>$(PRESSSHOT_AUTH_SERVICE_URL)</string>
+	<key>PressShotCloudupClientID</key>
+	<string>$(PRESSSHOT_CLOUDUP_CLIENT_ID)</string>
+	<key>PressShotCloudupClientSecret</key>
+	<string>$(PRESSSHOT_CLOUDUP_CLIENT_SECRET)</string>
 	<key>NSAppTransportSecurity</key>
 	<dict><key>NSAllowsLocalNetworking</key><true/></dict>
 	<key>CFBundleURLTypes</key>

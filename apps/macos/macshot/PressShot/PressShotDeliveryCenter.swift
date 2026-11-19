@@ -286,6 +286,8 @@ final class PressShotDeliveryCenter {
             GoogleDriveUploader.shared.uploadImage(image) { completion($0.map { Delivered(link: $0) }) }
         case "s3" where S3Uploader.shared.isConfigured:
             S3Uploader.shared.uploadImage(image) { completion($0.map { Delivered(link: $0) }) }
+        case CloudupUploader.providerID where CloudupUploader.shared.isSignedIn:
+            CloudupUploader.shared.uploadImage(image) { completion($0.map { Delivered(link: $0) }) }
         case "imgbb" where UserDefaults.standard.string(forKey: "uploadProvider") == "imgbb":
             ImageUploader.upload(image: image) { result in completion(result.map { Delivered(link: $0.link) }) }
         default: completion(.failure(URLError(.userAuthenticationRequired)))
@@ -311,6 +313,8 @@ final class PressShotDeliveryCenter {
             S3Uploader.shared.uploadVideo(url: file) { completion($0.map { Delivered(link: $0) }) }
         } else if provider == "gdrive", GoogleDriveUploader.shared.isSignedIn {
             GoogleDriveUploader.shared.uploadVideo(url: file) { completion($0.map { Delivered(link: $0) }) }
+        } else if provider == CloudupUploader.providerID, CloudupUploader.shared.isSignedIn {
+            CloudupUploader.shared.uploadVideo(url: file) { completion($0.map { Delivered(link: $0) }) }
         } else { completion(.failure(URLError(.unsupportedURL))) }
         #else
         completion(.failure(URLError(.notConnectedToInternet)))

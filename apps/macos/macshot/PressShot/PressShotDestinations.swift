@@ -34,6 +34,9 @@ enum PressShotDestinations {
         if S3Uploader.shared.isConfigured {
             result.append(.init(id: "s3", title: "S3-compatible storage"))
         }
+        if CloudupUploader.shared.isSignedIn {
+            result.append(.init(id: CloudupUploader.providerID, title: "Cloudup"))
+        }
         // imgbb is public hosting. Never silently select it on a fresh install.
         if UserDefaults.standard.string(forKey: "uploadProvider") == "imgbb" {
             result.append(.init(id: "imgbb", title: "imgbb (public image hosting)"))
