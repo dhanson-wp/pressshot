@@ -60,6 +60,17 @@ final class PressShotDeliveryTests: XCTestCase {
         XCTAssertEqual(center.record(id)?.message, "File link copied · not added to the Library")
         XCTAssertEqual(center.record(id)?.primaryNote, "File link copied · not added to the Library")
     }
+    func testCopyPrimaryLinkAgainAfterUpload() async throws {
+        var pending: [String: PressShotDeliveryCenter.Completion] = [:], copied: [String] = []
+        let center = PressShotDeliveryCenter(directory: directory, transport: { provider, _, done in pending[provider] = done }, copyLink: { copied.append($0) })
+        let id = try XCTUnwrap(center.submit(image: image(), selection: .init(primaryID: "primary")))
+        await MediaExportCoordinator.shared.waitUntilIdle()
+        XCTAssertFalse(center.copyPrimaryLink(id))
+        pending["primary"]?(.success("https://primary.example/capture"))
+        XCTAssertTrue(center.copyPrimaryLink(id))
+        XCTAssertEqual(copied, ["https://primary.example/capture", "https://primary.example/capture"])
+        XCTAssertFalse(center.copyPrimaryLink(UUID().uuidString))
+    }
     func testSecondaryNoteDoesNotReplacePrimaryStatus() async throws {
         var pending: [String: PressShotDeliveryCenter.Completion] = [:]
         let center = PressShotDeliveryCenter(directory: directory, transport: { provider, _, done in pending[provider] = done }, copyLink: { _ in })
