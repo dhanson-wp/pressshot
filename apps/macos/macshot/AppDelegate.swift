@@ -283,6 +283,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, SPUUpdaterDelegate {
         // otherwise leaves Vivid silently applied to every capture (#345).
         EffectsMigration.runIfNeeded()
         MicrophoneDeviceSelection.repairLegacyPreference()
+        MicrophoneDeviceSelection.applyMicrophoneDefault()
 
         // Surface save failures — otherwise a capture that can't be written
         // (full disk, unmounted volume) disappears without a word.

@@ -40,6 +40,22 @@ final class MicrophoneDeviceSelectionTests: XCTestCase {
         }
     }
 
+    @MainActor
+    func testMicrophoneStartsOnUnlessSomeoneTurnedItOff() {
+        withDefaults(["recordMicAudio": nil]) {
+            MicrophoneDeviceSelection.applyMicrophoneDefault()
+            XCTAssertTrue(UserDefaults.standard.bool(forKey: "recordMicAudio"))
+        }
+        withDefaults(["recordMicAudio": false]) {
+            MicrophoneDeviceSelection.applyMicrophoneDefault()
+            XCTAssertFalse(UserDefaults.standard.bool(forKey: "recordMicAudio"))
+        }
+        withDefaults(["recordMicAudio": true]) {
+            MicrophoneDeviceSelection.applyMicrophoneDefault()
+            XCTAssertTrue(UserDefaults.standard.bool(forKey: "recordMicAudio"))
+        }
+    }
+
     func testRecordingConfigurationCannotKeepAnEphemeralDefaultDevice() throws {
         let config = try RecordingConfiguration(displayID: 42, rect: CGRect(x: 0, y: 0, width: 100, height: 100),
             displayBounds: CGRect(x: 0, y: 0, width: 100, height: 100), backingScale: 1,

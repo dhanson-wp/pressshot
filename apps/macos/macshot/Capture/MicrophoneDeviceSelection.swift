@@ -26,6 +26,13 @@ enum MicrophoneDeviceSelection {
                 defaultDevice: { AVCaptureDevice.default(for: .audio) })
     }
 
+    /// Recordings start with the microphone on. The default is written once,
+    /// so someone who turned the microphone off keeps it off.
+    static func applyMicrophoneDefault(defaults: UserDefaults = .standard) {
+        guard defaults.object(forKey: "recordMicAudio") == nil else { return }
+        defaults.set(true, forKey: "recordMicAudio")
+    }
+
     static func repairLegacyPreference(defaults: UserDefaults = .standard) {
         guard let id = defaults.string(forKey: "selectedMicDeviceUID"), isTemporaryDefaultDevice(id) else { return }
         defaults.removeObject(forKey: "selectedMicDeviceUID")
