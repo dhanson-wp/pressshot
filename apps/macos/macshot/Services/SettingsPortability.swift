@@ -63,7 +63,7 @@ enum SettingsPortability {
         "knownToolRawValues", "knownActionTags",
         "suppressMoveToApplications", "useWindowTitleInFilename",
         // Account PII / history that isn't credential-named but shouldn't leave the machine.
-        "gdriveUserEmail",
+        "gdriveUserEmail", "cloudupUsername",
         "imgbbUploads",   // uploaded image links + delete URLs
     ]
 

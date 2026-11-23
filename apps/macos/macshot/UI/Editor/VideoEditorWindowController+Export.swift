@@ -261,6 +261,10 @@ extension VideoEditorWindowController {
         if provider == "s3" && !S3Uploader.shared.isConfigured {
             showStatus(L("Configure S3 in Settings"), isError: true); return
         }
+        let cloudup = provider == CloudupUploader.providerID
+        if cloudup && !CloudupUploader.shared.isSignedIn {
+            showStatus("Sign in to Cloudup in Settings", isError: true); return
+        }
         if provider.hasPrefix("wordpress:") && wordpress == nil && wpcom == nil {
             showStatus(WordPressConnectionError.credentials.localizedDescription, isError: true); return
         }
@@ -269,10 +273,10 @@ extension VideoEditorWindowController {
                 showStatus("Choose MP4 to upload this recording to " + (wordpress?.title ?? wpcom?.title ?? "WordPress") + ".", isError: true); return
             }
         }
-        if provider != "gdrive" && provider != "s3" && wordpress == nil && wpcom == nil {
-            showStatus("Choose WordPress, Google Drive, or S3 as the primary destination for recordings.", isError: true); return
+        if provider != "gdrive" && provider != "s3" && !cloudup && wordpress == nil && wpcom == nil {
+            showStatus("Choose WordPress, Cloudup, Google Drive, or S3 as the primary destination for recordings.", isError: true); return
         }
-        let label = wordpress?.title ?? wpcom?.title ?? (provider == "s3" ? "S3" : "Drive")
+        let label = wordpress?.title ?? wpcom?.title ?? (cloudup ? "Cloudup" : provider == "s3" ? "S3" : "Drive")
         let progress: @MainActor @Sendable (Double) -> Void = { [weak self] fraction in
             self?.showStatus(String(format: L("Uploading to %@... %d%%"), label, Int(fraction * 100)), persist: true)
         }
@@ -304,6 +308,8 @@ extension VideoEditorWindowController {
                 }
             } else if provider == "s3" {
                 S3Uploader.shared.uploadVideo(url: url, progress: progress, completion: finish)
+            } else if cloudup {
+                CloudupUploader.shared.uploadVideo(url: url, progress: progress, completion: finish)
             } else {
                 GoogleDriveUploader.shared.uploadVideo(url: url, progress: progress, completion: finish)
             }

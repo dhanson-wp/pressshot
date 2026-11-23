@@ -30,6 +30,9 @@ final class WordPressSettingsPane: NSView {
             stack.bottomAnchor.constraint(equalTo: document.bottomAnchor, constant: -22)
         ])
         NotificationCenter.default.addObserver(self, selector: #selector(refresh), name: WordPressDestinationsStore.changed, object: nil)
+        #if !OFFLINE
+        NotificationCenter.default.addObserver(self, selector: #selector(refresh), name: CloudupUploader.changed, object: nil)
+        #endif
         refresh()
     }
     required init?(coder: NSCoder) { fatalError() }
@@ -81,14 +84,61 @@ final class WordPressSettingsPane: NSView {
         let add = button("Connect a site", action: #selector(addSite))
         add.keyEquivalent = ""; stack.addArrangedSubview(add)
         stack.addArrangedSubview(label("Direct links follow your WordPress site's media-access rules. A PressShot library and revocable share pages aren't connected in this first version.", size: 11))
+        #if !OFFLINE
+        addCloudupRows()
+        #endif
         let providers = button("Google Drive, imgbb, and S3 settings…", action: #selector(otherProviders))
         stack.addArrangedSubview(providers)
-        for destination in PressShotDestinations.available where !destination.id.hasPrefix("wordpress:") && !destination.id.hasPrefix("wpcom:") {
+        for destination in PressShotDestinations.available where !destination.id.hasPrefix("wordpress:") && !destination.id.hasPrefix("wpcom:") && destination.id != "cloudup" {
             let primary = UserDefaults.standard.string(forKey: "uploadProvider") == destination.id
             let row = NSStackView(views: [label(destination.title), button(primary ? "Primary" : "Make primary", action: #selector(makePrimary(_:)), id: destination.id)])
             row.spacing = 12; stack.addArrangedSubview(row)
         }
     }
+    #if !OFFLINE
+    private var cloudupBusy = false
+    private var cloudupMessage: String?
+    /// Cloudup appears only in builds that carry a Cloudup app.
+    private func addCloudupRows() {
+        let cloudup = CloudupUploader.shared
+        guard cloudup.isConfigured else { return }
+        if cloudup.isSignedIn {
+            let text = NSStackView(views: [label("Cloudup", size: 13, bold: true), label("Unlisted share links · " + (cloudup.username ?? "signed in"), size: 11)])
+            text.orientation = .vertical; text.alignment = .leading; text.spacing = 4
+            let primary = UserDefaults.standard.string(forKey: "uploadProvider") == CloudupUploader.providerID
+            let choose = button(primary ? "Primary" : "Make primary", action: #selector(makePrimary(_:)), id: CloudupUploader.providerID)
+            choose.isEnabled = !primary
+            let row = NSStackView(views: [text, choose, button("Disconnect", action: #selector(disconnectCloudup))])
+            row.spacing = 10; row.alignment = .centerY
+            stack.addArrangedSubview(row)
+        } else {
+            let connect = button(cloudupBusy ? "Waiting for your browser…" : "Connect Cloudup", action: #selector(connectCloudup))
+            connect.isEnabled = !cloudupBusy
+            stack.addArrangedSubview(connect)
+            stack.addArrangedSubview(label(cloudupMessage ?? "Sign in to Cloudup in your browser. Each capture gets its own unlisted share link: anyone with the link can open it.", size: 11))
+        }
+    }
+    @objc private func connectCloudup() {
+        guard !cloudupBusy else { return }
+        cloudupBusy = true; cloudupMessage = "Approve PressShot in your browser, then return here."
+        refresh()
+        CloudupUploader.shared.signIn { [weak self] result in
+            guard let self else { return }
+            cloudupBusy = false
+            switch result {
+            case .success:
+                cloudupMessage = nil
+                if PressShotDestinations.primary == nil { UserDefaults.standard.set(CloudupUploader.providerID, forKey: "uploadProvider") }
+            case .failure(let error): cloudupMessage = error.localizedDescription
+            }
+            refresh()
+        }
+    }
+    @objc private func disconnectCloudup() {
+        cloudupMessage = nil
+        CloudupUploader.shared.signOut()
+    }
+    #endif
     @objc private func makePrimary(_ sender: NSButton) {
         guard let id = sender.identifier?.rawValue else { return }
         #if !OFFLINE
